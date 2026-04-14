@@ -33,10 +33,10 @@ echo "[3] 配置主题..."
 gsettings set org.gnome.desktop.interface gtk-theme "Arc"
 gsettings set org.gnome.desktop.interface icon-theme "Papirus-Dark"
 mkdir -p ~/.config/gtk-3.0
-cp -r settings.ini ~/.config/gtk-3.0/settings.ini 2>/dev/null || true
+cp  config/gtk-3.0/settings.ini ~/.config/gtk-3.0/settings.ini 2>/dev/null || true
 
 # 兼容 GTK2 旧组件
-cp -r config/gtkrc-2.0 ~/.gtkrc-2.0 2>/dev/null || true
+cp config/gtkrc-2.0 ~/.gtkrc-2.0 2>/dev/null || true
 
 # 设置Openbox主题
 mkdir -p ~/.themes
@@ -46,11 +46,12 @@ cp -r themes/* ~/.themes/ 2>/dev/null || true
 # 设置图标主题
 mkdir -p ~/.icons
 # 从本地图标目录复制（如果存在）
-if [ -d "icons/Papyrus" ]; then
-    cp -r icons/Papyrus ~/.icons/
-    cp -r icons/Papyrus-Dark ~/.icons/ 2>/dev/null || true
+if [ -d "icons/Papirus-Dark" ]; then
+    cp -r icons/Papirus-Dark ~/.icons/ 2>/dev/null || true
+elif [ -d "icons/Papyrus" ]; then
+    cp -r icons/Papyrus ~/.icons/ 2>/dev/null || true
 elif [ -d "icons/Numix" ]; then
-    cp -r icons/Numix ~/.icons/
+    cp -r icons/Numix ~/.icons/ 2>/dev/null || true
     cp -r icons/Numix-Light ~/.icons/ 2>/dev/null || true
 fi
 
