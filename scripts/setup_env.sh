@@ -55,11 +55,11 @@ function copy_user_configs() {
 
 # 函数：配置主题和外观
 # 目的：应用GTK主题、图标、字体和Openbox窗口主题，实现全局统一外观。这是主题适配的核心步骤。
-# 配置内容：GTK主题(Arc)、图标(Papirus-Dark)、字体(Noto Sans)、Openbox窗口主题、Qt主题(qt5ct)。通过gsettings设置GTK主题和图标，复制配置文件确保GTK2/3兼容，安装Openbox和Qt主题。
+# 配置内容：GTK主题(Arc-Dark)、图标(Papirus-Dark)、字体(Noto Sans)、Openbox窗口主题、Qt主题(qt5ct)。通过gsettings设置GTK主题和图标，复制配置文件确保GTK2/3兼容，安装Openbox和Qt主题。
 function configure_themes_and_appearance() {
     echo "[5/8] 配置主题和外观..."
     # 设置GTK主题和图标
-    gsettings set org.gnome.desktop.interface gtk-theme "Arc"
+    gsettings set org.gnome.desktop.interface gtk-theme "Arc-Dark"
     gsettings set org.gnome.desktop.interface icon-theme "Papirus-Dark"
     mkdir -p ~/.config/gtk-3.0
     cp config/gtk-3.0/settings.ini ~/.config/gtk-3.0/settings.ini 2>/dev/null || true
