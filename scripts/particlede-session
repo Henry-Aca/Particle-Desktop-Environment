@@ -15,8 +15,12 @@ export GTK_IM_MODULE=fcitx
 export QT_IM_MODULE=fcitx
 export XMODIFIERS=@im=fcitx
 
-# Qt应用使用GTK2风格
-export QT_QPA_PLATFORMTHEME=gtk2
+# Qt应用使用 qt5ct, 通过 qt5ct.conf 统一外观
+export QT_QPA_PLATFORMTHEME=qt5ct
+
+# 让 GTK 应用尽可能使用 Arc-Dark 会话主题
+export GTK_THEME=Arc-Dark
+export GTK2_RC_FILES="$HOME/.config/particlede/gtkrc-2.0"
 
 # 启动fcitx5输入法框架，仅在ParticleDE会话中启用
 fcitx5 &

@@ -54,18 +54,14 @@ function copy_user_configs() {
 }
 
 # 函数：配置主题和外观
-# 目的：应用GTK主题、图标、字体和Openbox窗口主题，实现全局统一外观。这是主题适配的核心步骤。
-# 配置内容：GTK主题(Arc-Dark)、图标(Papirus-Dark)、字体(Noto Sans)、Openbox窗口主题、Qt主题(qt5ct)。通过gsettings设置GTK主题和图标，复制配置文件确保GTK2/3兼容，安装Openbox和Qt主题。
+# 目的：为ParticleDE会话准备主题、图标和字体配置，但不通过 gsettings 修改当前用户的全局 GTK 会话设置。
+# 这样可以避免影响 GNOME 会话，同时让ParticleDE在其会话中使用Arc-Dark和Papirus-Dark。
 function configure_themes_and_appearance() {
     echo "[5/7] 配置主题和外观..."
-    # 设置GTK主题和图标
-    gsettings set org.gnome.desktop.interface gtk-theme "Arc-Dark"
-    gsettings set org.gnome.desktop.interface icon-theme "Papirus-Dark"
-    mkdir -p ~/.config/gtk-3.0
-    cp config/gtk-3.0/settings.ini ~/.config/gtk-3.0/settings.ini 2>/dev/null || true
-
-    # 兼容GTK2
-    cp config/gtkrc-2.0 ~/.gtkrc-2.0 2>/dev/null || true
+    # 不将 GTK3 用户配置写入 ~/.config/gtk-3.0，以避免影响 GNOME 会话。
+    # ParticleDE 会话通过 GTK_THEME=Arc-Dark 指向 Arc-Dark 主题。
+    mkdir -p ~/.config/particlede
+    cp config/gtkrc-2.0 ~/.config/particlede/gtkrc-2.0 2>/dev/null || true
 
     # 设置Openbox主题
     mkdir -p ~/.themes
@@ -82,12 +78,7 @@ function configure_themes_and_appearance() {
         cp -r icons/Numix-Light ~/.icons/ 2>/dev/null || true
     fi
 
-    # 配置字体
-    gsettings set org.gnome.desktop.interface font-name "Noto Sans 11"
-    gsettings set org.gnome.desktop.interface document-font-name "Noto Sans 11"
-    gsettings set org.gnome.desktop.interface monospace-font-name "Noto Mono 11"
-
-    # 配置Qt主题
+    # 通过会话环境变量和 Qt 配置文件设置主题，而不是修改全局 GNOME 设置
     mkdir -p ~/.config/qt5ct
     cp config/qt5ct/qt5ct.conf ~/.config/qt5ct/
 }
