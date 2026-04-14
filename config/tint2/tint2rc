@@ -8,10 +8,10 @@
 rounded = 8
 border_width = 0
 border_sides = TBLR
-background_color = #383c4a 90
-border_color = #383c4a 90
-background_color_hover = #383c4a 90
-border_color_hover = #383c4a 90
+background_color = #8f96b6 50
+border_color = #bdc1ce 90
+background_color_hover = #c9d0eb 90
+border_color_hover = #d0dafe 90
 background_color_pressed = #383c4a 90
 border_color_pressed = #383c4a 90
 
@@ -52,8 +52,8 @@ border_color_pressed = #e6616b 90
 rounded = 4
 border_width = 0
 border_sides = TBLR
-background_color = #383c4a 100
-border_color = #383c4a 100
+background_color = #939dc0 100
+border_color = #2c2738 100
 background_color_hover = #383c4a 100
 border_color_hover = #383c4a 100
 background_color_pressed = #383c4a 100
@@ -62,7 +62,7 @@ border_color_pressed = #383c4a 100
 #-------------------------------------
 # Panel
 panel_items = LTSC
-panel_size = 100% 40
+panel_size = 100% 50
 panel_margin = 0 0
 panel_padding = 4 0 4
 panel_background_id = 1
@@ -147,10 +147,10 @@ launcher_icon_asb = 100 0 0
 launcher_icon_theme_override = 0
 startup_notifications = 1
 launcher_tooltip = 1
-launcher_item_app = pcmanfm.desktop
-launcher_item_app = firefox.desktop
-launcher_item_app = terminal.desktop
-launcher_item_app = rofi.desktop
+#launcher_item_app = pcmanfm.desktop
+#launcher_item_app = firefox.desktop
+#launcher_item_app = terminal.desktop
+#launcher_item_app = rofi.desktop
 
 #-------------------------------------
 # Clock

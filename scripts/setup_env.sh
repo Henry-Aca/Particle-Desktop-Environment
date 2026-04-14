@@ -6,7 +6,7 @@ set -e # 遇到错误就退出
 echo "[1] 安装必要的软件包..."
 sudo apt update
 sudo apt install -y openbox tint2 rofi pcmanfm conky-all \
-x11-xserver-utils xinit x11-utils 
+xterm lightdm lightdm-gtk-greeter x11-xserver-utils xinit x11-utils 
 # 中文环境相关包
 sudo apt install -y fonts-noto-cjk fonts-noto-cjk-extra fonts-wqy-microhei fonts-wqy-zenhei \
 fcitx5 fcitx5-chinese-addons fcitx5-frontend-gtk3 fcitx5-frontend-gtk2 fcitx5-frontend-qt5
