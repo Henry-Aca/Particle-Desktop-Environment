@@ -9,7 +9,8 @@ sudo apt install -y openbox tint2 rofi pcmanfm conky-all \
 xterm lightdm lightdm-gtk-greeter x11-xserver-utils xinit x11-utils 
 # 中文环境相关包
 sudo apt install -y fonts-noto-cjk fonts-noto-cjk-extra fonts-wqy-microhei fonts-wqy-zenhei \
-fcitx5 fcitx5-chinese-addons fcitx5-frontend-gtk3 fcitx5-frontend-gtk2 fcitx5-frontend-qt5
+fcitx5 fcitx5-chinese-addons fcitx5-frontend-gtk3 fcitx5-frontend-gtk2 fcitx5-frontend-qt5 \
+arc-theme papirus-icon-theme lxappearance gnome-themes-extra
 # Qt主题支持
 sudo apt install -y qt5-style-plugins qt5ct
 
@@ -25,12 +26,38 @@ cp -r config/tint2/* ~/.config/tint2/ 2>/dev/null || true
 cp -r config/rofi/* ~/.config/rofi/ 2>/dev/null || true
 # 复制PCManFM配置
 cp -r config/pcmanfm/* ~/.config/pcmanfm/ 2>/dev/null || true
-
+# 自动配置 PCManFM 桌面背景色
+cat > ~/.config/pcmanfm/default/desktop-items-0.conf << EOF
+[*]
+desktop_bg=#3b4252
+desktop_shadow=#000000
+desktop_font=Sans 12
+wallpaper=
+wallpaper_mode=stretch
+show_documents=0
+show_trash=0
+show_mounts=0
+EOF
 echo "[3] 配置主题..."
 # 设置GTK主题
 gsettings set org.gnome.desktop.interface gtk-theme "Arc"
-gsettings set org.gnome.desktop.interface icon-theme "Papyrus"
+gsettings set org.gnome.desktop.interface icon-theme "Papirus-Dark"
+mkdir -p ~/.config/gtk-3.0
+cat > ~/.config/gtk-3.0/settings.ini << EOF
+[Settings]
+gtk-theme-name=Arc-Dark
+gtk-icon-theme-name=Papirus-Dark
+gtk-font-name=Noto Sans 11
+gtk-button-images=1
+gtk-menu-images=1
+EOF
 
+# 兼容 GTK2 旧组件
+cat > ~/.gtkrc-2.0 << EOF
+gtk-icon-theme-name = "Papirus-Dark"
+gtk-theme-name = "Arc-Dark"
+gtk-font-name = "Noto Sans 11"
+EOF
 # 设置Openbox主题
 mkdir -p ~/.themes
 cp -r themes/* ~/.themes/ 2>/dev/null || true

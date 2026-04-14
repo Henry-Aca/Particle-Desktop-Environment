@@ -5,10 +5,10 @@
 #-------------------------------------
 # Backgrounds
 # Background 1: Panel
-rounded = 8
+rounded = 0
 border_width = 0
 border_sides = TBLR
-background_color = #8f96b6 50
+background_color = #404552 100  
 border_color = #bdc1ce 90
 background_color_hover = #c9d0eb 90
 border_color_hover = #d0dafe 90
