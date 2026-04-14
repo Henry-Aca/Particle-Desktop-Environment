@@ -24,8 +24,10 @@ export GTK_ICON_THEME=Papirus-Dark
 export GTK2_RC_FILES="$HOME/.config/particlede/gtkrc-2.0"
 
 # 确保图标目录在搜索路径中，并更新图标缓存
-export XDG_DATA_DIRS="$HOME/.icons:$XDG_DATA_DIRS"
-gtk-update-icon-cache ~/.icons/Papirus-Dark &
+export XDG_DATA_DIRS="$HOME/.icons:$HOME/.local/share/icons:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+if [ -d "$HOME/.icons/Papirus-Dark" ]; then
+    gtk-update-icon-cache -f -t "$HOME/.icons/Papirus-Dark"
+fi
 
 # 启动fcitx5输入法框架，仅在ParticleDE会话中启用
 fcitx5 &

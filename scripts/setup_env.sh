@@ -33,7 +33,7 @@ function install_chinese_support() {
 # 轻量化考虑：lxappearance和gnome-themes-extra可选（如果不需要GUI配置工具，可注释掉）。
 function install_themes_and_appearance() {
     echo "[3/8] 安装主题和外观相关包..."
-    sudo apt install -y arc-theme papirus-icon-theme # lxappearance gnome-themes-extra
+    sudo apt install -y arc-theme papirus-icon-theme lxappearance # gnome-themes-extra
     # Qt主题支持
     sudo apt install -y qt5-style-plugins qt5ct
 }
