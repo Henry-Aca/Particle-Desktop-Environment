@@ -36,7 +36,7 @@ mkdir -p ~/.config/gtk-3.0
 cp -r settings.ini ~/.config/gtk-3.0/settings.ini 2>/dev/null || true
 
 # 兼容 GTK2 旧组件
-cp -r gtkrc-2.0 ~/.gtkrc-2.0 2>/dev/null || true
+cp -r config/gtkrc-2.0 ~/.gtkrc-2.0 2>/dev/null || true
 
 # 设置Openbox主题
 mkdir -p ~/.themes
