@@ -1,5 +1,52 @@
 #!/bin/bash
 # ParticleDE Desktop Session
-pcmanfm --desktop &
-tint2 &
+
+# ParticleDE 专属环境变量和会话启动脚本
+export XDG_CURRENT_DESKTOP="ParticleDE"
+export DESKTOP_SESSION="particlede"
+
+# 中文环境变量
+export LANG="zh_CN.UTF-8"
+export LANGUAGE="zh_CN:en_US"
+export LC_ALL="zh_CN.UTF-8"
+
+# 中文输入法fcitx环境变量
+export GTK_IM_MODULE=fcitx
+export QT_IM_MODULE=fcitx
+export XMODIFIERS=@im=fcitx
+
+# Qt应用使用 qt5ct, 通过 qt5ct.conf 统一外观
+export QT_QPA_PLATFORMTHEME=qt5ct
+
+# 让 GTK 应用尽可能使用 Arc-Dark 会话主题
+export GTK_THEME=Arc-Dark
+export GTK_ICON_THEME=Papirus-Dark
+export GTK2_RC_FILES="$HOME/.config/particlede/gtkrc-2.0"
+
+# 确保图标目录在搜索路径中，并更新图标缓存
+export XDG_DATA_DIRS="$HOME/.icons:$HOME/.local/share/icons:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+if [ -d "$HOME/.icons/Papirus-Dark" ]; then
+    gtk-update-icon-cache -f -t "$HOME/.icons/Papirus-Dark"
+fi
+
+# 启动fcitx5输入法框架，仅在ParticleDE会话中启用
+fcitx5 &
+
+# 启动组件的函数
+start_component() {
+    local component=$1
+    local command=$2
+    echo "Starting $component..."
+    $command &
+    # 给组件一些启动时间
+    sleep 0.2
+}
+
+# 按顺序启动组件
+start_component "PCManFM Desktop" "pcmanfm --desktop"
+start_component "Tint2 Panel" "tint2"
+start_component "Rofi (background)" "rofi -daemon"
+
+# 最后执行Openbox，作为会话的主进程
+echo "Starting Openbox..."
 exec openbox
