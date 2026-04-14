@@ -12,7 +12,7 @@ set -e  # 遇到错误立即退出脚本，确保安装过程的可靠性
 # 目的：安装ParticleDE的基础组件，包括窗口管理器、面板、启动器、文件管理器、系统监控、终端和显示管理器。
 # 组件作用：openbox(窗口管理器)、tint2(面板)、rofi(启动器)、pcmanfm(文件管理器)、conky-all(系统监控)、xterm(终端)、lightdm系列(显示管理器)、x11工具(X会话支持)。
 function update_and_install_core() {
-    echo "[1/8] 更新包列表并安装核心桌面组件..."
+    echo "[1/7] 更新包列表并安装核心桌面组件..."
     sudo apt update
     sudo apt install -y openbox tint2 rofi pcmanfm conky-all \
         xterm lightdm lightdm-gtk-greeter x11-xserver-utils xinit x11-utils
@@ -22,7 +22,7 @@ function update_and_install_core() {
 # 目的：确保系统支持中文显示和输入，包括中文字体和输入法框架。
 # 组件作用：fonts-noto-cjk(谷歌Noto CJK字体，覆盖中日韩)、fonts-wqy-microhei(文泉驿微米黑，常用中文字体)、fonts-wqy-zenhei(文泉驿正黑，常用中文字体)、fcitx5(输入法框架)、fcitx5-chinese-addons(中文输入法插件)、fcitx5-frontend-gtk3/gtk2/qt5(输入法前端支持)。
 function install_chinese_support() {
-    echo "[2/8] 安装中文环境支持包..."
+    echo "[2/7] 安装中文环境支持包..."
     sudo apt install -y fonts-noto-cjk fonts-noto-cjk-extra fonts-wqy-microhei fonts-wqy-zenhei \
         fcitx5 fcitx5-chinese-addons fcitx5-frontend-gtk3 fcitx5-frontend-gtk2 fcitx5-frontend-qt5
 }
@@ -42,7 +42,7 @@ function install_themes_and_appearance() {
 # 目的：将项目的配置文件复制到用户家目录，确保各组件的个性化设置（如窗口管理规则、面板布局、启动器样式）实现开箱。
 # 配置内容：openbox(rc.xml窗口规则)、tint2(面板配置)、rofi(启动器样式)、pcmanfm(文件管理器设置)。
 function copy_user_configs() {
-    echo "[4/8] 复制用户级配置文件..."
+    echo "[4/7] 复制用户级配置文件..."
     # 创建配置目录
     mkdir -p ~/.config/openbox ~/.config/tint2 ~/.config/rofi ~/.config/pcmanfm/default
 
@@ -57,7 +57,7 @@ function copy_user_configs() {
 # 目的：应用GTK主题、图标、字体和Openbox窗口主题，实现全局统一外观。这是主题适配的核心步骤。
 # 配置内容：GTK主题(Arc-Dark)、图标(Papirus-Dark)、字体(Noto Sans)、Openbox窗口主题、Qt主题(qt5ct)。通过gsettings设置GTK主题和图标，复制配置文件确保GTK2/3兼容，安装Openbox和Qt主题。
 function configure_themes_and_appearance() {
-    echo "[5/8] 配置主题和外观..."
+    echo "[5/7] 配置主题和外观..."
     # 设置GTK主题和图标
     gsettings set org.gnome.desktop.interface gtk-theme "Arc-Dark"
     gsettings set org.gnome.desktop.interface icon-theme "Papirus-Dark"
@@ -92,21 +92,11 @@ function configure_themes_and_appearance() {
     cp config/qt5ct/qt5ct.conf ~/.config/qt5ct/
 }
 
-# 函数：配置中文环境
-# 目的：部署X会话配置文件，确保中文输入法正常工作。这是中文兼容的核心配置。
-# 配置内容：将xprofile复制到用户家目录，设置环境变量（如LANG=zh_CN.UTF-8）和输入法相关变量（如GTK_IM_MODULE=fcitx、QT_IM_MODULE=fcitx、XMODIFIERS="@im=fcitx"），确保登录后环境变量生效，中文输入法可用。
-function configure_chinese_environment() {
-    echo "[6/8] 配置中文环境..."
-    # 复制xprofile并设置执行权限
-    cp config/xprofile ~/.xprofile
-    chmod +x ~/.xprofile
-}
-
 # 函数：安装系统级会话文件
 # 目的：将桌面会话脚本和入口文件安装到系统目录，使ParticleDE在LightDM中可用。这是桌面环境集成到系统的关键。
-# 配置内容：particlede-session(启动脚本，运行openbox等组件)、particlede.desktop(会话描述文件)。
+# 配置内容：particlede-session(启动脚本，运行openbox等组件，适配中文环境)、particlede.desktop(会话描述文件)。
 function install_system_session_files() {
-    echo "[7/8] 安装系统级会话文件..."
+    echo "[6/7] 安装系统级会话文件..."
     sudo cp scripts/particlede-session /usr/local/bin/
     sudo chmod +x /usr/local/bin/particlede-session
     sudo cp config/particlede.desktop /usr/share/xsessions/
@@ -115,7 +105,7 @@ function install_system_session_files() {
 # 函数：显示用户提示
 # 目的：提供安装完成后的使用指南，帮助用户快速上手ParticleDE。
 function show_user_tips() {
-    echo "[8/8] 显示用户提示..."
+    echo "[7/7] 显示用户提示..."
     echo "ParticleDE 环境配置已完成！"
     echo "请注销或重启，在登录界面选择 'ParticleDE' 会话。"
     echo ""
@@ -136,7 +126,6 @@ install_chinese_support
 install_themes_and_appearance
 copy_user_configs
 configure_themes_and_appearance
-configure_chinese_environment
 install_system_session_files
 show_user_tips
 

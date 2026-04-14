@@ -1,9 +1,25 @@
 #!/bin/bash
 # ParticleDE Desktop Session
 
-# 确保环境变量设置
+# ParticleDE 专属环境变量和会话启动脚本
 export XDG_CURRENT_DESKTOP="ParticleDE"
 export DESKTOP_SESSION="particlede"
+
+# 中文环境变量
+export LANG="zh_CN.UTF-8"
+export LANGUAGE="zh_CN:en_US"
+export LC_ALL="zh_CN.UTF-8"
+
+# 中文输入法fcitx环境变量
+export GTK_IM_MODULE=fcitx
+export QT_IM_MODULE=fcitx
+export XMODIFIERS=@im=fcitx
+
+# Qt应用使用GTK2风格
+export QT_QPA_PLATFORMTHEME=gtk2
+
+# 启动fcitx5输入法框架，仅在ParticleDE会话中启用
+fcitx5 &
 
 # 启动组件的函数
 start_component() {
