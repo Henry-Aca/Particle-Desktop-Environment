@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=ParticleDE
 Comment=A lightweight desktop built with Openbox and friends
-Exec=particlede-session
+TryExec=/usr/local/bin/particlede-session
+Exec=/usr/local/bin/particlede-session
 Type=Application
 DesktopNames=ParticleDE

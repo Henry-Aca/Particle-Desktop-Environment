@@ -18,6 +18,40 @@ function update_and_install_core() {
         xterm lightdm lightdm-gtk-greeter x11-xserver-utils xinit x11-utils
 }
 
+# 函数：安装配置中心（Python+GTK3）并创建桌面图标
+# 目的：提供一个“桌面上的配置中心图标”，点击即可启动图形化配置中心。
+# 安装内容：
+# - Python GTK3 依赖：python3-gi gir1.2-gtk-3.0
+# - 程序文件：/usr/local/share/particlede/configer/main.py
+# - 启动器：/usr/local/bin/particlede-config-center
+# - 应用入口：/usr/share/applications/particlede-config-center.desktop
+# - 桌面快捷方式：复制一份 .desktop 到用户的 Desktop 目录，并 chmod +x
+function install_config_center_and_desktop_icon() {
+    echo "[1b/7] 安装配置中心并创建桌面图标..."
+
+    sudo apt install -y python3-gi gir1.2-gtk-3.0
+
+    # 安装程序文件
+    sudo mkdir -p /usr/local/share/particlede/configer
+    sudo cp configer/main.py /usr/local/share/particlede/configer/main.py
+
+    # 安装启动器脚本
+    sudo cp scripts/particlede-config-center /usr/local/bin/particlede-config-center
+    sudo chmod +x /usr/local/bin/particlede-config-center
+
+    # 安装应用入口
+    sudo cp configer/particlede-config-center.desktop /usr/share/applications/particlede-config-center.desktop
+
+    # 复制到“桌面”目录作为桌面图标（兼容中文目录）
+    DESKTOP_DIR="$(xdg-user-dir DESKTOP 2>/dev/null || true)"
+    if [ -z "$DESKTOP_DIR" ]; then
+        DESKTOP_DIR="$HOME/Desktop"
+    fi
+    mkdir -p "$DESKTOP_DIR"
+    cp /usr/share/applications/particlede-config-center.desktop "$DESKTOP_DIR/ParticleDE-Config-Center.desktop" || true
+    chmod +x "$DESKTOP_DIR/ParticleDE-Config-Center.desktop" || true
+}
+
 # 函数：安装中文环境支持包
 # 目的：确保系统支持中文显示和输入，包括中文字体和输入法框架。
 # 组件作用：fonts-noto-cjk(谷歌Noto CJK字体，覆盖中日韩)、fonts-wqy-microhei(文泉驿微米黑，常用中文字体)、fonts-wqy-zenhei(文泉驿正黑，常用中文字体)、fcitx5(输入法框架)、fcitx5-chinese-addons(中文输入法插件)、fcitx5-frontend-gtk3/gtk2/qt5(输入法前端支持)。
@@ -113,6 +147,7 @@ function show_user_tips() {
 
 # 主执行流程：按顺序调用各函数，确保依赖关系（先安装包，再配置）
 update_and_install_core
+install_config_center_and_desktop_icon
 install_chinese_support
 install_themes_and_appearance
 copy_user_configs
