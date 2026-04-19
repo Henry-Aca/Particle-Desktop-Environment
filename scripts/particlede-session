@@ -18,9 +18,17 @@ export XMODIFIERS=@im=fcitx
 # Qt应用使用 qt5ct, 通过 qt5ct.conf 统一外观
 export QT_QPA_PLATFORMTHEME=qt5ct
 
-# 让 GTK 应用尽可能使用 Arc-Dark 会话主题
-export GTK_THEME=Arc-Dark
-export GTK_ICON_THEME=Papirus-Dark
+# 让 GTK 应用使用 ParticleDE 会话主题（可被配置中心覆盖）
+DEFAULT_GTK_THEME="Arc-Dark"
+DEFAULT_GTK_ICON_THEME="Papirus-Dark"
+PARTICLEDE_ENV="$HOME/.config/particlede/session.env"
+if [ -f "$PARTICLEDE_ENV" ]; then
+    # shellcheck disable=SC1090
+    . "$PARTICLEDE_ENV"
+fi
+
+export GTK_THEME="${GTK_THEME:-$DEFAULT_GTK_THEME}"
+export GTK_ICON_THEME="${GTK_ICON_THEME:-$DEFAULT_GTK_ICON_THEME}"
 export GTK2_RC_FILES="$HOME/.config/particlede/gtkrc-2.0"
 
 # 确保图标目录在搜索路径中，并更新图标缓存
