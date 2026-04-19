@@ -1,0 +1,98 @@
+{
+  "app.title": "ParticleDE 配置中心",
+
+  "tab.appearance": "外观设置",
+  "tab.common": "常用设置",
+  "tab.control": "组件控制",
+  "tab.files": "配置文件",
+
+  "appearance.theme.label": "主题：",
+  "appearance.theme.hint": "说明：主题来自 ~/.themes（安装脚本会把仓库 themes/ 复制到这里）。\nGTK 主题会在下次登录 ParticleDE 时生效；Openbox 主题若该主题包含 openbox-3，则可立即重载生效。",
+
+  "appearance.wallpaper.label": "壁纸：",
+  "appearance.wallpaper.filter_images": "图片",
+  "appearance.wallpaper.enable": "登录时自动设置壁纸（写入 Openbox autostart）",
+  "appearance.conky.enable": "登录时自动启动 Conky（写入 Openbox autostart）",
+
+  "appearance.panel.position": "面板位置：",
+  "appearance.panel.position.bottom": "底部",
+  "appearance.panel.position.top": "顶部",
+  "appearance.panel.height": "高度：",
+
+  "appearance.apply": "保存并应用",
+  "appearance.restart_tint2": "重启 tint2",
+  "appearance.reload_openbox": "重载 Openbox",
+
+  "common.launcher.label": "启动器命令（Super+Space）：",
+  "common.terminal.label": "终端命令（Super+Enter）：",
+  "common.apply": "保存并应用",
+  "msg.saved.keybinds": "已保存：快捷键",
+
+  "common.hint": "提示：快捷键写入 ~/.config/openbox/rc.xml 后，需要点击“重载 Openbox”生效。\n面板修改写入 ~/.config/tint2/tint2rc 后，点击“重启 tint2”生效。",
+
+  "control.refresh": "刷新状态",
+  "control.tint2": "tint2：",
+  "control.pcmanfm": "桌面(PCManFM)：",
+  "control.conky": "Conky：",
+  "control.openbox": "Openbox：",
+  "control.start": "启动",
+  "control.stop": "停止",
+  "control.restart": "重启",
+  "control.reconfigure": "重载配置",
+
+  "files.choose": "选择配置文件：",
+  "files.reload": "重新加载",
+  "files.save": "保存",
+  "files.openbox_rc": "Openbox rc.xml",
+  "files.openbox_autostart": "Openbox autostart",
+  "files.tint2rc": "tint2rc",
+  "files.rofi": "rofi config.rasi (如果存在)",
+  "files.conky": "conky.conf (如果存在)",
+
+  "msg.saved.base": "已保存：快捷键 / autostart / 面板设置",
+  "msg.saved.with_theme": "；主题已保存（GTK 主题需下次登录生效）",
+
+  "err.missing.openbox_rc": "找不到 Openbox 配置文件：{path}（请先运行安装脚本复制配置）",
+  "err.missing.tint2rc": "找不到 tint2 配置文件：{path}（请先运行安装脚本复制配置）",
+  "err.write.openbox_keys": "写入 Openbox 快捷键失败：{err}",
+  "err.write.autostart": "写入 Openbox autostart 失败：{err}",
+  "err.write.tint2rc": "写入 tint2rc 失败：{err}",
+  "err.write.session_theme": "写入 ParticleDE 会话主题失败：{err}",
+  "err.write.openbox_theme": "写入 Openbox 主题失败：{err}",
+  "err.wallpaper": "{err}",
+
+  "err.runtime": "{err}",
+
+  "err.cmd_not_found": "找不到命令：{cmd}",
+  "err.action_unknown": "未知操作：{action}",
+
+  "msg.tint2.restarted": "tint2 已重启",
+  "msg.tint2.stopped": "tint2 已停止",
+  "msg.tint2.started": "tint2 已启动",
+  "msg.pcmanfm.started": "桌面(PCManFM) 已启动",
+  "msg.pcmanfm.stopped": "桌面(PCManFM) 已停止",
+  "msg.conky.started": "Conky 已启动",
+  "msg.conky.stopped": "Conky 已停止",
+  "msg.openbox.reconfigured": "Openbox 已重载配置",
+  "msg.openbox.reconfigure_ran": "Openbox 重载命令已执行",
+  "msg.wallpaper.applied_pcmanfm": "壁纸已应用（pcmanfm）",
+  "msg.wallpaper.applied_feh": "壁纸已应用（feh）",
+  "err.wallpaper.no_file": "未选择壁纸文件",
+  "err.wallpaper.missing": "壁纸文件不存在：{path}",
+  "err.wallpaper.failed": "设置壁纸失败：{detail}",
+
+  "files.missing": "# 文件不存在：{path}\n",
+  "files.read_failed": "# 读取失败：{err}\n",
+  "files.save_failed": "保存失败：{err}",
+  "files.saved": "已保存：{path}",
+  "files.rcxml_create_blocked": "rc.xml 不存在时不建议在此创建，请先用安装脚本复制默认配置",
+
+  "status.running": "运行中",
+  "status.stopped": "未运行",
+
+  "component.openbox": "Openbox",
+  "component.tint2": "tint2",
+  "component.rofi": "rofi",
+  "component.pcmanfm": "pcmanfm",
+  "component.conky": "conky"
+}

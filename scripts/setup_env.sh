@@ -31,9 +31,11 @@ function install_config_center_and_desktop_icon() {
 
     sudo apt install -y python3-gi gir1.2-gtk-3.0
 
-    # 安装程序文件
+    # 安装程序文件（配置中心已拆分为多个文件）
     sudo mkdir -p /usr/local/share/particlede/configer
-    sudo cp configer/main.py /usr/local/share/particlede/configer/main.py
+    sudo cp configer/*.py /usr/local/share/particlede/configer/
+    sudo mkdir -p /usr/local/share/particlede/configer/strings
+    sudo cp configer/strings/*.json /usr/local/share/particlede/configer/strings/
 
     # 安装启动器脚本
     sudo cp scripts/particlede-config-center /usr/local/bin/particlede-config-center
