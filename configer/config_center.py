@@ -24,6 +24,7 @@ from backend import (
     RunningStatus,
     apply_wallpaper_now,
     list_installed_themes,
+    launch_system_settings,
     parse_managed_autostart_settings,
     parse_tint2_panel_height,
     parse_tint2_panel_position,
@@ -87,6 +88,7 @@ class ConfigCenter(Gtk.Application):
             notebook.append_page(self._build_appearance_tab(), Gtk.Label(label=self.t("tab.appearance")))
             notebook.append_page(self._build_common_tab(), Gtk.Label(label=self.t("tab.common")))
             notebook.append_page(self._build_control_tab(), Gtk.Label(label=self.t("tab.control")))
+            notebook.append_page(self._build_system_tab(), Gtk.Label(label=self.t("tab.system")))
             notebook.append_page(self._build_editor_tab(), Gtk.Label(label=self.t("tab.files")))
 
             self.window.show_all()
@@ -311,6 +313,31 @@ class ConfigCenter(Gtk.Application):
         self._refresh_status()
         return box
 
+    def _build_system_tab(self) -> Gtk.Widget:
+        grid = Gtk.Grid(column_spacing=12, row_spacing=10)
+        grid.set_border_width(10)
+
+        row = 0
+        for kind, label_key in [
+            ("display", "system.display"),
+            ("input", "system.input"),
+            ("sound", "system.sound"),
+            ("power", "system.power"),
+            ("datetime", "system.datetime"),
+            ("network", "system.network"),
+        ]:
+            grid.attach(Gtk.Label(label=self.t(label_key), xalign=0), 0, row, 1, 1)
+            btn = Gtk.Button(label=self.t("system.open"))
+            btn.connect("clicked", lambda _b, k=kind: self._open_system_settings(k))
+            grid.attach(btn, 1, row, 1, 1)
+            row += 1
+
+        sc = Gtk.ScrolledWindow()
+        sc.set_hexpand(True)
+        sc.set_vexpand(True)
+        sc.add_with_viewport(grid)
+        return sc
+
     def _build_editor_tab(self) -> Gtk.Widget:
         outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
         outer.set_border_width(10)
@@ -444,6 +471,15 @@ class ConfigCenter(Gtk.Application):
         if selected_theme:
             msg += self.t("msg.saved.with_theme")
         self._show_message(msg)
+
+    def _open_system_settings(self, kind: str) -> None:
+        ok, msg_key, kwargs = launch_system_settings(kind)
+        if ok and msg_key == "msg.system.launched":
+            kwargs = {"target": self.t(f"system.{kind}")}
+        self._show_message(
+            self.t(msg_key, **(kwargs or {})),
+            Gtk.MessageType.INFO if ok else Gtk.MessageType.ERROR,
+        )
 
     def _selected_file(self) -> Tuple[str, Path]:
         idx = self.file_combo.get_active()

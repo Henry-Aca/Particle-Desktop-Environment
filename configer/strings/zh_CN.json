@@ -4,6 +4,7 @@
   "tab.appearance": "外观设置",
   "tab.common": "常用设置",
   "tab.control": "组件控制",
+  "tab.system": "系统设置",
   "tab.files": "配置文件",
 
   "appearance.theme.label": "主题：",
@@ -39,6 +40,16 @@
   "control.stop": "停止",
   "control.restart": "重启",
   "control.reconfigure": "重载配置",
+
+  "system.display": "显示分辨率",
+  "system.input": "输入法",
+  "system.sound": "声音",
+  "system.power": "电源管理",
+  "system.datetime": "日期时间",
+  "system.network": "网络",
+  "system.open": "打开",
+
+  "msg.system.launched": "已打开：{target}",
 
   "files.choose": "选择配置文件：",
   "files.reload": "重新加载",

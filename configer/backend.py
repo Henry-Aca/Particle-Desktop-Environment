@@ -439,6 +439,34 @@ def restart_component(kind: str) -> Tuple[bool, str, Dict[str, Any]]:
     return False, "err.action_unknown", {"action": kind}
 
 
+# -------------------- External system settings --------------------
+
+def launch_system_settings(kind: str) -> Tuple[bool, str, Dict[str, Any]]:
+    """Launch external GUI tools for system settings.
+
+    Returns (ok, msg_key, kwargs).
+    """
+
+    commands: Dict[str, List[str]] = {
+        "display": ["gnome-control-center", "display"],
+        "input": ["fcitx5-configtool"],
+        "sound": ["pavucontrol"],
+        "power": ["xfce4-power-manager-settings"],
+        "datetime": ["gnome-control-center", "datetime"],
+        "network": ["nm-connection-editor"],
+    }
+
+    cmd = commands.get(kind)
+    if not cmd:
+        return False, "err.action_unknown", {"action": kind}
+
+    err = spawn(cmd)
+    if err:
+        return _spawn_err(err)
+
+    return True, "msg.system.launched", {"target": kind}
+
+
 def _spawn_err(err: str) -> Tuple[bool, str, Dict[str, Any]]:
     if err.startswith("cmd_not_found:"):
         return False, "err.cmd_not_found", {"cmd": err.split(":", 1)[1]}
