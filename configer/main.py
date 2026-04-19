@@ -34,6 +34,8 @@ PARTICLEDE_SESSION_ENV = Path.home() / ".config" / "particlede" / "session.env"
 AUTOSTART_BEGIN = "### ParticleDE CONFIG CENTER BEGIN"
 AUTOSTART_END = "### ParticleDE CONFIG CENTER END"
 
+WALLPAPER_MODE = "stretch"
+
 
 @dataclass
 class RunningStatus:
@@ -119,6 +121,43 @@ def update_kv_config(path: Path, updates: Dict[str, str]) -> None:
     _write_text(path, "".join(out))
 
 
+def read_kv_config(path: Path) -> Dict[str, str]:
+    """Read simple key=value config (tint2-style), returning last occurrence for each key."""
+    if not path.exists():
+        return {}
+    key_re = re.compile(r"^\s*([A-Za-z0-9_]+)\s*=\s*(.*?)\s*$")
+    out: Dict[str, str] = {}
+    for line in _read_text(path).splitlines():
+        m = key_re.match(line)
+        if not m:
+            continue
+        out[m.group(1)] = m.group(2)
+    return out
+
+
+def parse_tint2_panel_height(panel_size_value: str) -> Optional[int]:
+    """Parse tint2 panel_size value like '100% 30' -> 30."""
+    if not panel_size_value:
+        return None
+    parts = panel_size_value.strip().split()
+    if len(parts) < 2:
+        return None
+    try:
+        return int(float(parts[1]))
+    except Exception:
+        return None
+
+
+def parse_tint2_panel_position(panel_position_value: str) -> Optional[str]:
+    """Return 'top'/'bottom' from tint2 panel_position like 'bottom center'."""
+    if not panel_position_value:
+        return None
+    first = panel_position_value.strip().split()[0].lower()
+    if first in ("top", "bottom"):
+        return first
+    return None
+
+
 def upsert_openbox_autostart_block(
     autostart_path: Path,
     *,
@@ -137,8 +176,10 @@ def upsert_openbox_autostart_block(
     block_lines: List[str] = [AUTOSTART_BEGIN, "# Managed by ParticleDE Config Center"]
 
     if wallpaper_enabled and wallpaper_path:
+        # Prefer pcmanfm wallpaper (pcmanfm is the desktop manager in ParticleDE)
+        # This avoids being overwritten by pcmanfm desktop background.
         quoted = shlex.quote(wallpaper_path)
-        block_lines.append(f"feh --bg-scale {quoted} &")
+        block_lines.append(f"pcmanfm -w {quoted} --wallpaper-mode={WALLPAPER_MODE} &")
 
     if conky_enabled:
         block_lines.append("conky &")
@@ -164,6 +205,99 @@ def upsert_openbox_autostart_block(
         os.chmod(autostart_path, 0o755)
     except Exception:
         pass
+
+
+def parse_managed_autostart_settings(autostart_path: Path) -> Dict[str, Optional[str]]:
+    """Read settings from the managed autostart block.
+
+    Returns keys:
+    - wallpaper_path: str|None
+    - wallpaper_enabled: "1"|"0"|None
+    - conky_enabled: "1"|"0"|None
+    """
+    if not autostart_path.exists():
+        return {"wallpaper_path": None, "wallpaper_enabled": None, "conky_enabled": None}
+
+    text = _read_text(autostart_path)
+    m = re.search(
+        rf"{re.escape(AUTOSTART_BEGIN)}([\s\S]*?){re.escape(AUTOSTART_END)}",
+        text,
+        flags=re.MULTILINE,
+    )
+    if not m:
+        return {"wallpaper_path": None, "wallpaper_enabled": None, "conky_enabled": None}
+
+    block = m.group(1)
+    wallpaper_path: Optional[str] = None
+    wallpaper_enabled: Optional[str] = "0"
+    conky_enabled: Optional[str] = "0"
+
+    for raw in block.splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+
+        # Conky
+        if re.match(r"^conky\b", line):
+            conky_enabled = "1"
+            continue
+
+        # pcmanfm wallpaper
+        if line.startswith("pcmanfm"):
+            try:
+                parts = shlex.split(line)
+            except Exception:
+                parts = line.split()
+
+            # handle --set-wallpaper=FILE or -w FILE
+            for i, p in enumerate(parts):
+                if p.startswith("--set-wallpaper="):
+                    wallpaper_path = p.split("=", 1)[1]
+                    wallpaper_enabled = "1"
+                    break
+                if p in ("-w", "--set-wallpaper") and i + 1 < len(parts):
+                    wallpaper_path = parts[i + 1]
+                    wallpaper_enabled = "1"
+                    break
+            continue
+
+        # legacy feh wallpaper
+        if line.startswith("feh"):
+            try:
+                parts = shlex.split(line)
+            except Exception:
+                parts = line.split()
+            if "--bg-scale" in parts:
+                idx = parts.index("--bg-scale")
+                if idx + 1 < len(parts):
+                    wallpaper_path = parts[idx + 1]
+                    wallpaper_enabled = "1"
+
+    return {
+        "wallpaper_path": wallpaper_path,
+        "wallpaper_enabled": wallpaper_enabled,
+        "conky_enabled": conky_enabled,
+    }
+
+
+def apply_wallpaper_now(wallpaper_path: str) -> Tuple[bool, str]:
+    if not wallpaper_path:
+        return False, "未选择壁纸文件"
+    p = Path(wallpaper_path)
+    if not p.exists():
+        return False, f"壁纸文件不存在：{wallpaper_path}"
+
+    # Prefer pcmanfm (desktop manager)
+    err = _spawn(["pcmanfm", f"--set-wallpaper={wallpaper_path}", f"--wallpaper-mode={WALLPAPER_MODE}"])
+    if not err:
+        return True, "壁纸已应用（pcmanfm）"
+
+    # Fallback to feh
+    err2 = _spawn(["feh", "--bg-scale", wallpaper_path])
+    if not err2:
+        return True, "壁纸已应用（feh）"
+
+    return False, f"设置壁纸失败：{err}; {err2}"
 
 
 def set_openbox_keybind_execute(rc_xml_path: Path, key: str, command: str) -> None:
@@ -406,6 +540,9 @@ class ConfigCenter(Gtk.Application):
 
         row = 0
 
+        saved = parse_managed_autostart_settings(OPENBOX_AUTOSTART)
+        tint_cfg = read_kv_config(TINT2_RC)
+
         # Theme
         grid.attach(Gtk.Label(label="主题：", xalign=0), 0, row, 1, 1)
         self.theme_combo = Gtk.ComboBoxText()
@@ -464,14 +601,20 @@ class ConfigCenter(Gtk.Application):
         self.wallpaper_btn.add_filter(filt)
         grid.attach(self.wallpaper_btn, 1, row, 2, 1)
 
+        if saved.get("wallpaper_path"):
+            try:
+                self.wallpaper_btn.set_filename(saved["wallpaper_path"])  # type: ignore[arg-type]
+            except Exception:
+                pass
+
         row += 1
         self.wallpaper_enable = Gtk.CheckButton(label="登录时自动设置壁纸（写入 Openbox autostart）")
-        self.wallpaper_enable.set_active(True)
+        self.wallpaper_enable.set_active(saved.get("wallpaper_enabled") != "0")
         grid.attach(self.wallpaper_enable, 1, row, 2, 1)
 
         row += 1
         self.conky_enable = Gtk.CheckButton(label="登录时自动启动 Conky（写入 Openbox autostart）")
-        self.conky_enable.set_active(False)
+        self.conky_enable.set_active(saved.get("conky_enabled") == "1")
         grid.attach(self.conky_enable, 1, row, 2, 1)
 
         # Keybinds
@@ -499,12 +642,16 @@ class ConfigCenter(Gtk.Application):
         self.panel_pos = Gtk.ComboBoxText()
         self.panel_pos.append_text("底部")
         self.panel_pos.append_text("顶部")
-        self.panel_pos.set_active(0)
+        pos = parse_tint2_panel_position(tint_cfg.get("panel_position", ""))
+        self.panel_pos.set_active(0 if pos != "top" else 1)
         grid.attach(self.panel_pos, 1, row, 1, 1)
 
         grid.attach(Gtk.Label(label="高度：", xalign=0), 2, row, 1, 1)
         self.panel_height = Gtk.SpinButton()
         self.panel_height.set_adjustment(Gtk.Adjustment(30, 16, 120, 1, 5, 0))
+        current_height = parse_tint2_panel_height(tint_cfg.get("panel_size", ""))
+        if current_height is not None:
+            self.panel_height.set_value(current_height)
         grid.attach(self.panel_height, 3, row, 1, 1)
 
         row += 2
@@ -694,6 +841,13 @@ class ConfigCenter(Gtk.Application):
         except Exception as exc:
             self._show_message(f"写入 Openbox autostart 失败：{exc}", Gtk.MessageType.ERROR)
             return
+
+        # Apply wallpaper immediately for current session
+        if self.wallpaper_enable.get_active() and wp_path:
+            ok, msg = apply_wallpaper_now(wp_path)
+            if not ok:
+                self._show_message(msg, Gtk.MessageType.ERROR)
+                return
 
         # 3) Tint2 quick settings
         pos = "bottom center" if self.panel_pos.get_active() == 0 else "top center"
