@@ -187,12 +187,14 @@ generate_rofi_config() {
     local run_text="${UI_TEXT_ROFI_RUN[$lang]}"
     local file_text="${UI_TEXT_ROFI_FILEBROWSER[$lang]}"
     local window_text="${UI_TEXT_ROFI_WINDOW[$lang]}"
+    local search_text="${UI_TEXT_ROFI_SEARCH[$lang]}"
     
     # Use sed to replace placeholders in template
     sed -e "s|{{ROFI_DRUN}}|${drun_text}|g" \
         -e "s|{{ROFI_RUN}}|${run_text}|g" \
         -e "s|{{ROFI_FILE}}|${file_text}|g" \
         -e "s|{{ROFI_WINDOW}}|${window_text}|g" \
+        -e "s|{{ROFI_SEARCH}}|${search_text}|g" \
         "$source_config" > "$target_config"
     
     log_success "Rofi config generated: $target_config"
@@ -211,20 +213,28 @@ generate_powermenu() {
     
     log_info "Generating localized powermenu for language: $lang"
     
-    local power_text="${UI_TEXT_ROFI_POWER[$lang]}"
+    local uptime_text="${UI_TEXT_POWER_UPTIME[$lang]}"
+    local confirm_text="${UI_TEXT_POWER_CONFIRM[$lang]}"
+    local confirm_msg_text="${UI_TEXT_POWER_CONFIRM_MSG[$lang]}"
     local lock_text="${UI_TEXT_POWER_LOCK[$lang]}"
     local logout_text="${UI_TEXT_POWER_LOGOUT[$lang]}"
     local suspend_text="${UI_TEXT_POWER_SUSPEND[$lang]}"
     local reboot_text="${UI_TEXT_POWER_REBOOT[$lang]}"
     local shutdown_text="${UI_TEXT_POWER_SHUTDOWN[$lang]}"
+    local yes_text="${UI_TEXT_POWER_YES[$lang]}"
+    local no_text="${UI_TEXT_POWER_NO[$lang]}"
     
     # Use sed to replace placeholders in template
-    sed -e "s|{{ROFI_POWER}}|${power_text}|g" \
-        -e "s|{{POWER_LOCK}}|${lock_text}|g" \
-        -e "s|{{POWER_LOGOUT}}|${logout_text}|g" \
-        -e "s|{{POWER_SUSPEND}}|${suspend_text}|g" \
-        -e "s|{{POWER_REBOOT}}|${reboot_text}|g" \
-        -e "s|{{POWER_SHUTDOWN}}|${shutdown_text}|g" \
+    sed -e "s|{{UPTIME}}|${uptime_text}|g" \
+        -e "s|{{CONFIRM}}|${confirm_text}|g" \
+        -e "s|{{CONFIRM_MSG}}|${confirm_msg_text}|g" \
+        -e "s|{{LOCK}}|${lock_text}|g" \
+        -e "s|{{LOGOUT}}|${logout_text}|g" \
+        -e "s|{{SUSPEND}}|${suspend_text}|g" \
+        -e "s|{{REBOOT}}|${reboot_text}|g" \
+        -e "s|{{SHUTDOWN}}|${shutdown_text}|g" \
+        -e "s|{{YES}}|${yes_text}|g" \
+        -e "s|{{NO}}|${no_text}|g" \
         "$source_menu" > "$target_menu"
     
     # Make it executable
