@@ -48,7 +48,7 @@ mainbox {
     border-radius:               0px;
     border-color:                @selected;
     background-color:            transparent;
-    children:                    [ "inputbar", "message", "listview" ];
+    children:                    [ "inputbar", "listview" ];
 }
 
 /*****----- Inputbar -----*****/
@@ -80,35 +80,6 @@ prompt {
     border-radius:               0px;
     background-color:            @active;
     text-color:                  @background;
-}
-
-/*****----- Message -----*****/
-message {
-    enabled:                     true;
-    margin:                      0px;
-    padding:                     8px;
-    border:                      0px solid;
-    border-radius:               0px;
-    border-color:                @selected;
-    background-color:            @background-alt;
-    text-color:                  @foreground;
-}
-textbox {
-    background-color:            inherit;
-    text-color:                  inherit;
-    vertical-align:              0.5;
-    horizontal-align:            0.0;
-    placeholder-color:           @foreground;
-    blink:                       true;
-    markup:                      true;
-}
-error-message {
-    padding:                     8px;
-    border:                      0px solid;
-    border-radius:               0px;
-    border-color:                @selected;
-    background-color:            @background;
-    text-color:                  @foreground;
 }
 
 /*****----- Listview -----*****/
