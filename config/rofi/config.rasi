@@ -12,10 +12,10 @@ configuration {
 	modi:                       "drun,run,filebrowser";
     show-icons:                 true;
     icon-theme:                 "Papirus";
-    display-drun:               "Apps";
-    display-run:                "Run";
-    display-filebrowser:        "File";
-    display-window:             "Window";
+    display-drun:               "应用";
+    display-run:                "查找";
+    display-filebrowser:        "文件";
+    display-window:             "窗口";
 	drun-display-format:        "{name} [<span weight='light' size='small'><i>({generic})</i></span>]";
 	window-format:              "{w} · {c} · {t}";
 }
