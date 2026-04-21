@@ -36,6 +36,9 @@ function install_themes_and_appearance() {
     sudo apt install -y arc-theme papirus-icon-theme # lxappearance
     # Qt主题支持
     sudo apt install -y qt5-style-plugins qt5ct
+    # Nerd Font图标字体支持
+    sudo apt install -y fonts-hack-ttf fonts-nerd-fonts
+    fc-cache -fv 2>/dev/null || true
 }
 
 # 函数：安装桌面快捷方式文件
