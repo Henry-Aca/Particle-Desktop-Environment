@@ -12,7 +12,7 @@
     </item>
     <separator/>
     <item label="重新加载 Openbox">
-      <action name="Reconfigure"/>
+      <action name="Execute"><command>openbox --restart</command></action>
     </item>
     <item label="退出登录">
       <action name="Execute"><command>openbox --exit</command></action>
