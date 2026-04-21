@@ -33,14 +33,15 @@ function install_chinese_support() {
 # 轻量化考虑：lxappearance和gnome-themes-extra可选（如果不需要GUI配置工具，可注释掉）。
 function install_themes_and_appearance() {
     echo "[3/8] 安装主题和外观相关包..."
-    sudo apt install -y arc-theme papirus-icon-theme lxappearance
+    sudo apt install -y arc-theme papirus-icon-theme # lxappearance
     # Qt主题支持
     sudo apt install -y qt5-style-plugins qt5ct
 }
 
 # 函数：复制用户级配置文件
 # 目的：将项目的配置文件复制到用户家目录，确保各组件的个性化设置（如窗口管理规则、面板布局、启动器样式）实现开箱即用。
-# 配置内容：openbox(rc.xml窗口规则)、tint2(面板配置)、rofi(启动器样式)、pcmanfm(文件管理器设置)、gtkrc-2.0(GTK2配置)、gtk-3.0(GTK3配置)、qt5ct(Qt主题配置)。
+# 配置内容：openbox(rc.xml窗口规则)、tint2(面板配置)、rofi(启动器样式)、pcmanfm(文件管理器设置)、gtkrc-2.0(GTK2配置)、
+#          gtk-3.0(GTK3配置)、qt5ct(Qt主题配置)、language.conf(语言配置)。
 function copy_user_configs() {
     echo "[4/7] 复制用户级配置文件..."
     # 使用统一的配置部署脚本
