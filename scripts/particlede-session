@@ -5,15 +5,137 @@
 export XDG_CURRENT_DESKTOP="ParticleDE"
 export DESKTOP_SESSION="particlede"
 
-# 中文环境变量
-export LANG="zh_CN.UTF-8"
-export LANGUAGE="zh_CN:en_US"
-export LC_ALL="zh_CN.UTF-8"
+# ============================================================================
+# LANGUAGE CONFIGURATION - Load user or default settings
+# ============================================================================
 
-# 中文输入法fcitx环境变量
-export GTK_IM_MODULE=fcitx
-export QT_IM_MODULE=fcitx
-export XMODIFIERS=@im=fcitx
+# Get script directory and config paths
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+# Possible config locations (in order of preference)
+POSSIBLE_CONFIG_DIRS=(
+    "${PROJECT_ROOT}/config"                    # Development location
+    "/usr/local/share/particlede/config"        # System installation
+    "/usr/share/particlede/config"              # Alternative system location
+)
+
+# Find the actual config directory
+CONFIG_DIR=""
+for dir in "${POSSIBLE_CONFIG_DIRS[@]}"; do
+    if [[ -d "$dir" && -f "$dir/particlede/language.conf" ]]; then
+        CONFIG_DIR="$dir"
+        break
+    fi
+done
+
+# Fallback to project directory if no config found
+if [[ -z "$CONFIG_DIR" ]]; then
+    CONFIG_DIR="${PROJECT_ROOT}/config"
+fi
+
+GLOBAL_LANG_CONF="${CONFIG_DIR}/particlede/language.conf"
+USER_CONFIG_DIR="${HOME}/.config/particlede"
+USER_LANG_CONF="${USER_CONFIG_DIR}/language.conf"
+
+# Default language if no user preference
+DEFAULT_LANGUAGE="zh_CN"
+
+# Load global language configuration
+if [[ -f "$GLOBAL_LANG_CONF" ]]; then
+    source "$GLOBAL_LANG_CONF"
+fi
+
+# Load user language configuration if it exists
+if [[ -f "$USER_LANG_CONF" ]]; then
+    source "$USER_LANG_CONF"
+    ACTIVE_LANGUAGE="${USER_LANGUAGE:-$ACTIVE_LANGUAGE}"
+fi
+
+# Use active language (either from user config or default)
+TARGET_LANGUAGE="${ACTIVE_LANGUAGE:-$DEFAULT_LANGUAGE}"
+
+# ============================================================================
+# GENERATE LOCALIZED CONFIGURATION FILES
+# ============================================================================
+
+generate_localized_configs() {
+    local lang="$1"
+    local source_menu="${CONFIG_DIR}/openbox/menu.xml.template"
+    local target_menu="${CONFIG_DIR}/openbox/menu.xml"
+    local source_rofi="${CONFIG_DIR}/rofi/config.rasi.template"
+    local target_rofi="${CONFIG_DIR}/rofi/config.rasi"
+    
+    if [[ -f "$source_menu" ]]; then
+        local launcher_text="${UI_TEXT_LAUNCHER[$lang]}"
+        local filemgr_text="${UI_TEXT_FILE_MANAGER[$lang]}"
+        local terminal_text="${UI_TEXT_TERMINAL[$lang]}"
+        local logout_text="${UI_TEXT_LOGOUT[$lang]}"
+        
+        sed -e "s|{{LAUNCHER}}|${launcher_text}|g" \
+            -e "s|{{FILE_MANAGER}}|${filemgr_text}|g" \
+            -e "s|{{TERMINAL}}|${terminal_text}|g" \
+            -e "s|{{LOGOUT}}|${logout_text}|g" \
+            "$source_menu" > "$target_menu"
+    fi
+    
+    if [[ -f "$source_rofi" ]]; then
+        local drun_text="${UI_TEXT_ROFI_DRUN[$lang]}"
+        local run_text="${UI_TEXT_ROFI_RUN[$lang]}"
+        local file_text="${UI_TEXT_ROFI_FILEBROWSER[$lang]}"
+        local window_text="${UI_TEXT_ROFI_WINDOW[$lang]}"
+        
+        sed -e "s|{{ROFI_DRUN}}|${drun_text}|g" \
+            -e "s|{{ROFI_RUN}}|${run_text}|g" \
+            -e "s|{{ROFI_FILE}}|${file_text}|g" \
+            -e "s|{{ROFI_WINDOW}}|${window_text}|g" \
+            "$source_rofi" > "$target_rofi"
+    fi
+}
+
+# Generate localized configurations at session startup
+generate_localized_configs "$TARGET_LANGUAGE"
+
+# ============================================================================
+# SET LOCALE ENVIRONMENT VARIABLES BASED ON TARGET LANGUAGE
+# ============================================================================
+
+# Get locale string for target language
+TARGET_LOCALE="${LOCALE_MAP[$TARGET_LANGUAGE]:-zh_CN.UTF-8}"
+
+# Export locale environment variables
+export LANG="$TARGET_LOCALE"
+export LANGUAGE="${TARGET_LANGUAGE}:en_US:zh_CN"
+export LC_ALL="$TARGET_LOCALE"
+export LC_TIME="$TARGET_LOCALE"
+export LC_NUMERIC="$TARGET_LOCALE"
+export LC_MONETARY="$TARGET_LOCALE"
+export LC_MESSAGES="$TARGET_LOCALE"
+export LC_COLLATE="$TARGET_LOCALE"
+export LC_CTYPE="$TARGET_LOCALE"
+
+# ============================================================================
+# INPUT METHOD CONFIGURATION
+# ============================================================================
+
+# Configure input method based on language
+INPUT_METHOD="${INPUT_METHOD_FOR_LANGUAGE[$TARGET_LANGUAGE]:-fcitx5}"
+
+case "$INPUT_METHOD" in
+    fcitx5)
+        export GTK_IM_MODULE=fcitx
+        export QT_IM_MODULE=fcitx
+        export XMODIFIERS=@im=fcitx
+        # fcitx5 will be started later in the startup sequence
+        ;;
+    none)
+        # No input method for English
+        ;;
+esac
+
+# ============================================================================
+# THEME AND ICON CONFIGURATION
+# ============================================================================
 
 # Qt应用使用 qt5ct, 通过 qt5ct.conf 统一外观
 export QT_QPA_PLATFORMTHEME=qt5ct
@@ -26,11 +148,12 @@ export GTK2_RC_FILES="$HOME/.config/particlede/gtkrc-2.0"
 # 确保图标目录在搜索路径中，并更新图标缓存
 export XDG_DATA_DIRS="$HOME/.icons:$HOME/.local/share/icons:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
 if [ -d "$HOME/.icons/Papirus-Dark" ]; then
-    gtk-update-icon-cache -f -t "$HOME/.icons/Papirus-Dark"
+    gtk-update-icon-cache -f -t "$HOME/.icons/Papirus-Dark" 2>/dev/null || true
 fi
 
-# 启动fcitx5输入法框架，仅在ParticleDE会话中启用
-fcitx5 &
+# ============================================================================
+# COMPONENT STARTUP FUNCTIONS
+# ============================================================================
 
 # 启动组件的函数
 start_component() {
@@ -41,6 +164,17 @@ start_component() {
     # 给组件一些启动时间
     sleep 0.2
 }
+
+# ============================================================================
+# START DESKTOP SESSION COMPONENTS
+# ============================================================================
+
+# Start input method if needed
+if [[ "$INPUT_METHOD" == "fcitx5" ]]; then
+    echo "Starting fcitx5 input method..."
+    fcitx5 &
+    sleep 0.5
+fi
 
 # 按顺序启动组件
 start_component "PCManFM Desktop" "pcmanfm --desktop"

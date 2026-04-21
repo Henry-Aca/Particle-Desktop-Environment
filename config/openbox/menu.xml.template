@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <openbox_menu>
   <menu id="root-menu" label="ParticleDE">
-    <item label="Launcher">
+    <item label="{{LAUNCHER}}">
       <action name="Execute"><command>rofi -show drun</command></action>
     </item>
-    <item label="File Manager">
+    <item label="{{FILE_MANAGER}}">
       <action name="Execute"><command>pcmanfm</command></action>
     </item>
-    <item label="Terminal">
+    <item label="{{TERMINAL}}">
       <action name="Execute"><command>xterm</command></action>
     </item>
     <separator/>
-    <item label="Restart Openbox">
+    <item label="{{RESTART_OPENBOX}}">
       <action name="Execute"><command>openbox --restart</command></action>
     </item>
-    <item label="Logout">
+    <item label="{{LOGOUT}}">
       <action name="Execute"><command>openbox --exit</command></action>
     </item>
   </menu>
