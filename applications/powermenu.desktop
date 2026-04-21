@@ -1,6 +1,6 @@
 [Desktop Entry]
-Name=Shutdown
-Name[zh_CN]=关机
+Name=Powermenu
+Name[zh_CN]=电源
 Comment=Power menu with shutdown, reboot, suspend options
 Exec=rofi -show power -modi power:~/.config/rofi/powermenu.sh
 Icon=system-shutdown
