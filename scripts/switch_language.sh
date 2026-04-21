@@ -198,27 +198,6 @@ generate_rofi_config() {
     log_success "Rofi config generated: $target_config"
 }
 
-# Apply language settings to current session
-apply_to_session() {
-    local lang="$1"
-    local locale=$(get_locale "$lang")
-    
-    log_info "Applying language settings to current session: $lang ($locale)"
-    
-    # Set locale environment variables
-    export LANG="$locale"
-    export LANGUAGE="${lang}:en_US:zh_CN"
-    export LC_ALL="$locale"
-    export LC_TIME="$locale"
-    export LC_NUMERIC="$locale"
-    export LC_MONETARY="$locale"
-    export LC_MESSAGES="$locale"
-    export LC_COLLATE="$locale"
-    export LC_CTYPE="$locale"
-    
-    log_success "Environment variables updated for current session"
-}
-
 # Configure input method based on language
 configure_input_method() {
     local lang="$1"
@@ -258,6 +237,22 @@ configure_input_method() {
             return 1
             ;;
     esac
+}
+
+# Update project language.conf and save to user config
+update_language_config() {
+    local lang="$1"
+
+    log_info "Updating project language configuration: ${CONFIG_DIR}/particlede/language.conf"
+
+    if [[ ! -f "${CONFIG_DIR}/particlede/language.conf" ]]; then
+        log_error "Project language configuration not found: ${CONFIG_DIR}/particlede/language.conf"
+        return 1
+    fi
+
+    sed -i "s/^ACTIVE_LANGUAGE=.*/ACTIVE_LANGUAGE=\"${lang}\"/" "${CONFIG_DIR}/particlede/language.conf"
+
+    log_success "Project language configuration updated: $lang"
 }
 
 # Save language choice to user config directory
@@ -325,39 +320,33 @@ main() {
     # Execute language switching steps
     log_info "Starting language switch to: $target_lang"
     echo ""
-    
-    # 1. Generate localized configuration files
+
+    # 1. Update project language.conf first
+    if ! update_language_config "$target_lang"; then
+        log_error "Failed to update project language configuration"
+        return 1
+    fi
+
+    # 2. Generate localized configuration files
     if ! generate_openbox_menu "$target_lang"; then
         log_error "Failed to generate Openbox menu"
         return 1
     fi
-    
+
     if ! generate_rofi_config "$target_lang"; then
         log_error "Failed to generate Rofi config"
         return 1
     fi
-    
-    # 2. Deploy configurations to user directories
+
+    # 3. Deploy configurations to user directories (including language.conf)
     if ! "${SCRIPT_DIR}/copy_configs.sh"; then
         log_error "Failed to deploy configurations"
         return 1
     fi
-    
-    # 3. Apply to current session
-    if ! apply_to_session "$target_lang"; then
-        log_error "Failed to apply session environment"
-        return 1
-    fi
-    
+
     # 4. Configure input method
     if ! configure_input_method "$target_lang"; then
         log_error "Failed to configure input method"
-        return 1
-    fi
-    
-    # 5. Save user preference
-    if ! save_user_config "$target_lang"; then
-        log_error "Failed to save user configuration"
         return 1
     fi
     

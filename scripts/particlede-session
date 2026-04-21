@@ -6,57 +6,33 @@ export XDG_CURRENT_DESKTOP="ParticleDE"
 export DESKTOP_SESSION="particlede"
 
 # ============================================================================
-# LANGUAGE CONFIGURATION - Load user or default settings
+# 加载全局和用户语言配置
 # ============================================================================
 
-# Get script directory and config paths
+# 获取脚本目录和项目根目录
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
-# Possible config locations (in order of preference)
-POSSIBLE_CONFIG_DIRS=(
-    "${PROJECT_ROOT}/config"                    # Development location
-    "/usr/local/share/particlede/config"        # System installation
-    "/usr/share/particlede/config"              # Alternative system location
-)
-
-# Find the actual config directory
-CONFIG_DIR=""
-for dir in "${POSSIBLE_CONFIG_DIRS[@]}"; do
-    if [[ -d "$dir" && -f "$dir/particlede/language.conf" ]]; then
-        CONFIG_DIR="$dir"
-        break
-    fi
-done
-
-# Fallback to project directory if no config found
-if [[ -z "$CONFIG_DIR" ]]; then
-    CONFIG_DIR="${PROJECT_ROOT}/config"
-fi
-
-GLOBAL_LANG_CONF="${CONFIG_DIR}/particlede/language.conf"
+# 用户配置目录，使用 ~/.config/particlede/language.conf 作为唯一语言配置
 USER_CONFIG_DIR="${HOME}/.config/particlede"
 USER_LANG_CONF="${USER_CONFIG_DIR}/language.conf"
 
-# Default language if no user preference
+# 项目配置目录（模板文件位置）
+CONFIG_DIR="${PROJECT_ROOT}/config"
+
+# 默认语言环境：zh_CN（中文）
 DEFAULT_LANGUAGE="zh_CN"
 
-# Load global language configuration
-if [[ -f "$GLOBAL_LANG_CONF" ]]; then
-    source "$GLOBAL_LANG_CONF"
-fi
-
-# Load user language configuration if it exists
+# 加载用户语言配置（唯一配置来源）
 if [[ -f "$USER_LANG_CONF" ]]; then
     source "$USER_LANG_CONF"
-    ACTIVE_LANGUAGE="${USER_LANGUAGE:-$ACTIVE_LANGUAGE}"
+    TARGET_LANGUAGE="${ACTIVE_LANGUAGE:-$DEFAULT_LANGUAGE}"
+else
+    TARGET_LANGUAGE="$DEFAULT_LANGUAGE"
 fi
 
-# Use active language (either from user config or default)
-TARGET_LANGUAGE="${ACTIVE_LANGUAGE:-$DEFAULT_LANGUAGE}"
-
 # ============================================================================
-# GENERATE LOCALIZED CONFIGURATION FILES
+# 生成本地化配置文件
 # ============================================================================
 
 generate_localized_configs() {
@@ -93,17 +69,18 @@ generate_localized_configs() {
     fi
 }
 
-# Generate localized configurations at session startup
+# 在会话启动时生成本地化配置文件
 generate_localized_configs "$TARGET_LANGUAGE"
 
 # ============================================================================
-# SET LOCALE ENVIRONMENT VARIABLES BASED ON TARGET LANGUAGE
+# 根据目标语言设置环境变量
 # ============================================================================
 
-# Get locale string for target language
+# 通过语言映射表获取对应的 locale 字符串，默认为 zh_CN.UTF-8
 TARGET_LOCALE="${LOCALE_MAP[$TARGET_LANGUAGE]:-zh_CN.UTF-8}"
 
 # Export locale environment variables
+# 导出一系列与语言环境相关的环境变量，确保会话中的应用程序能够正确使用目标语言和区域设置
 export LANG="$TARGET_LOCALE"
 export LANGUAGE="${TARGET_LANGUAGE}:en_US:zh_CN"
 export LC_ALL="$TARGET_LOCALE"
@@ -115,7 +92,7 @@ export LC_COLLATE="$TARGET_LOCALE"
 export LC_CTYPE="$TARGET_LOCALE"
 
 # ============================================================================
-# INPUT METHOD CONFIGURATION
+# 输入法配置 - 根据语言环境设置输入法
 # ============================================================================
 
 # Configure input method based on language
@@ -134,7 +111,7 @@ case "$INPUT_METHOD" in
 esac
 
 # ============================================================================
-# THEME AND ICON CONFIGURATION
+# 主题和外观配置
 # ============================================================================
 
 # Qt应用使用 qt5ct, 通过 qt5ct.conf 统一外观
@@ -152,7 +129,7 @@ if [ -d "$HOME/.icons/Papirus-Dark" ]; then
 fi
 
 # ============================================================================
-# COMPONENT STARTUP FUNCTIONS
+# 组件启动函数
 # ============================================================================
 
 # 启动组件的函数
@@ -166,10 +143,10 @@ start_component() {
 }
 
 # ============================================================================
-# START DESKTOP SESSION COMPONENTS
+# 启动桌面会话组件
 # ============================================================================
 
-# Start input method if needed
+# 开启fcitx5输入法，如果配置了fcitx5
 if [[ "$INPUT_METHOD" == "fcitx5" ]]; then
     echo "Starting fcitx5 input method..."
     fcitx5 &
