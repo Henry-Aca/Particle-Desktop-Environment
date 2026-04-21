@@ -48,14 +48,16 @@ OPTIONS:
 
 DESCRIPTION:
   This script copies configuration files from the project config/ directory
-  to the user's ~/.config/ directory. It ensures that all ParticleDE
-  components (Openbox, Tint2, Rofi, PCManFM) use the correct configurations.
+  to the user's ~/.config/ directory. 
 
   The script handles:
   • Openbox window manager configuration
   • Tint2 panel configuration
   • Rofi launcher configuration
   • PCManFM file manager configuration
+  • GTK 2.0 and 3.0 theme configuration
+  • Qt5ct theme configuration
+  • ParticleDE language configuration
 
   This script is called by both setup_env.sh and switch_language.sh to
   ensure configurations are properly deployed after changes.
@@ -151,7 +153,7 @@ copy_gtk_config() {
         cp "${CONFIG_DIR}/particlede/gtkrc-2.0" ~/.config/particlede/
         log_success "GTK configuration copied"
     else
-        log_error "GTK 2.0 config not found in project config"
+        log_error "GTK-2.0 config not found in project config"
         return 1
     fi
 
@@ -160,7 +162,7 @@ copy_gtk_config() {
         cp -r "${CONFIG_DIR}/particlede/gtk-3.0/"* ~/.config/particlede/gtk-3.0/ 2>/dev/null || true
         log_success "GTK 3.0 configuration copied"
     else
-        log_error "GTK 3.0 config not found in project config"
+        log_error "GTK-3.0 config not found in project config"
         return 1
     fi
 }
@@ -224,7 +226,11 @@ copy_all_configs() {
         success=false
     fi
 
-    return $success
+    if [[ "$success" == true ]]; then
+        return 0
+    else
+        return 1
+    fi
 }
 
 # ============================================================================
@@ -253,14 +259,6 @@ main() {
     echo ""
 
     if copy_all_configs; then
-        log_success "All configurations deployed successfully"
-    else
-        log_error "Some configurations failed to deploy. Please check the error messages above."
-    fi
-
-    echo ""
-
-    if [[ "$success" == true ]]; then
         log_success "All configurations deployed successfully"
         log_info "Configurations copied from: $CONFIG_DIR"
         log_info "Configurations deployed to: ~/.config/"
