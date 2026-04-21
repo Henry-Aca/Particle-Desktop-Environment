@@ -121,6 +121,12 @@ copy_rofi_config() {
         log_success "Rofi powermenu.sh copied with executable permissions"
     fi
 
+    # Copy powermenu.rasi theme
+    if [[ -f "${CONFIG_DIR}/rofi/powermenu.rasi" ]]; then
+        cp "${CONFIG_DIR}/rofi/powermenu.rasi" ~/.config/rofi/
+        log_success "Rofi powermenu.rasi copied"
+    fi
+
     # Copy Rofi colors and themes if they exist
     if [[ -d "${CONFIG_DIR}/rofi/colors" ]]; then
         cp -r "${CONFIG_DIR}/rofi/colors" ~/.config/rofi/ 2>/dev/null || true
