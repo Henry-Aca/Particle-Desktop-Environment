@@ -12,7 +12,7 @@ set -e  # 遇到错误立即退出脚本，确保安装过程的可靠性
 # 目的：安装ParticleDE的基础组件，包括窗口管理器、面板、启动器、文件管理器、系统监控、终端和显示管理器。
 # 组件作用：openbox(窗口管理器)、tint2(面板)、rofi(启动器)、pcmanfm(文件管理器)、conky-all(系统监控)、xterm(终端)、lightdm系列(显示管理器)、x11工具(X会话支持)。
 function update_and_install_core() {
-    echo "[1/7] 更新包列表并安装核心桌面组件..."
+    echo "[1/9] 更新包列表并安装核心桌面组件..."
     sudo apt update
     sudo apt install -y openbox tint2 rofi pcmanfm conky-all \
         lightdm lightdm-gtk-greeter x11-xserver-utils xinit x11-utils xfce4-terminal
@@ -22,7 +22,7 @@ function update_and_install_core() {
 # 目的：确保系统支持中文显示和输入，包括中文字体和输入法框架。
 # 组件作用：fonts-noto-cjk(谷歌Noto CJK字体，覆盖中日韩)、fonts-wqy-microhei(文泉驿微米黑，常用中文字体)、fonts-wqy-zenhei(文泉驿正黑，常用中文字体)、fcitx5(输入法框架)、fcitx5-chinese-addons(中文输入法插件)、fcitx5-frontend-gtk3/gtk2/qt5(输入法前端支持)。
 function install_chinese_support() {
-    echo "[2/7] 安装中文环境支持包..."
+    echo "[2/9] 安装中文环境支持包..."
     sudo apt install -y fonts-noto-cjk fonts-noto-cjk-extra fonts-wqy-microhei fonts-wqy-zenhei \
         fcitx5 fcitx5-chinese-addons fcitx5-frontend-gtk3 fcitx5-frontend-gtk2 fcitx5-frontend-qt5
 }
@@ -32,13 +32,19 @@ function install_chinese_support() {
 # 组件作用：arc-theme(流行的GTK主题)、papirus-icon-theme(流行的图标主题)、lxappearance(GTK外观配置工具，可选)、gnome-themes-extra(提供额外的GTK主题，可选)、qt5-style-plugins和qt5ct(Qt应用主题支持)。
 # 轻量化考虑：lxappearance和gnome-themes-extra可选（如果不需要GUI配置工具，可注释掉）。
 function install_themes_and_appearance() {
-    echo "[3/8] 安装主题和外观相关包..."
+    echo "[3/9] 安装主题和外观相关包..."
     sudo apt install -y arc-theme papirus-icon-theme # lxappearance
     # Qt主题支持
     sudo apt install -y qt5-style-plugins qt5ct
-    # Nerd Font图标字体支持
-    sudo apt install -y fonts-hack-ttf fonts-nerd-fonts
-    fc-cache -fv 2>/dev/null || true
+    # Nerd Font图标字体支持（尝试多个可能的包名）
+    sudo apt install -y fonts-hack-ttf || true
+    sudo apt install -y fonts-hack || true
+    # 尝试安装 Nerd Font（包名因发行版而异）
+    # (sudo apt install -y fonts-nerd-fonts 2>/dev/null || \
+    #  sudo apt install -y nerd-fonts 2>/dev/null || \
+    #  sudo apt install -y ttf-nerd-fonts 2>/dev/null || \
+    #  sudo apt install -y font-awesome 2>/dev/null) && echo "Nerd Font installed successfully" || echo "Note: Nerd Font not available in repos, icons may not display"
+    # fc-cache -fv 2>/dev/null || true
 }
 
 # 函数：安装桌面快捷方式文件
