@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Logout
+Name[zh_CN]=注销
+Comment=Logout from desktop session
+Exec=openbox --exit
+Icon=system-log-out
+Terminal=false
+Type=Application
+Categories=System;Utility;
