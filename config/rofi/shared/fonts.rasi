@@ -4,9 +4,9 @@
  * Github : @adi1090x
  * 
  * Fonts
- * font: "Noto Sans 11";
+ * 
  **/
 
 * {
-    font: "Hack Nerd Font 11";
+    font: "Noto Sans 11";
 }

@@ -17,13 +17,13 @@ uptime="`uptime -p | sed -e 's/up //g'`"
 host=`hostname`
 
 # Options (Nerd Font icons)
-shutdown='\ue7c0 {{SHUTDOWN}}'
-reboot='\ue7c4 {{REBOOT}}'
-lock='\ue9cf {{LOCK}}'
-suspend='\ue9a3 {{SUSPEND}}'
-logout='\ue9d1 {{LOGOUT}}'
-yes='\ue92c {{YES}}'
-no='\ue8d2 {{NO}}'
+shutdown='{{SHUTDOWN}}'
+reboot='{{REBOOT}}'
+lock='{{LOCK}}'
+suspend='{{SUSPEND}}'
+logout='{{LOGOUT}}'
+yes='{{YES}}'
+no='{{NO}}'
 
 # Rofi CMD
 rofi_cmd() {
