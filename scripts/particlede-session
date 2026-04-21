@@ -19,11 +19,17 @@ USER_LANG_CONF="${USER_CONFIG_DIR}/language.conf"
 
 # 项目配置目录（模板文件位置）
 CONFIG_DIR="${PROJECT_ROOT}/config"
+GLOBAL_LANG_CONF="${CONFIG_DIR}/particlede/language.conf"
 
 # 默认语言环境：zh_CN（中文）
 DEFAULT_LANGUAGE="zh_CN"
 
-# 加载用户语言配置（唯一配置来源）
+# 先加载全局语言配置（包含关联数组定义）
+if [[ -f "$GLOBAL_LANG_CONF" ]]; then
+    source "$GLOBAL_LANG_CONF"
+fi
+
+# 再加载用户语言配置（可能覆盖 ACTIVE_LANGUAGE）
 if [[ -f "$USER_LANG_CONF" ]]; then
     source "$USER_LANG_CONF"
     TARGET_LANGUAGE="${ACTIVE_LANGUAGE:-$DEFAULT_LANGUAGE}"
