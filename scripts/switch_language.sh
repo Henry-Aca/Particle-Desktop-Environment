@@ -235,6 +235,34 @@ generate_powermenu() {
     log_success "Powermenu generated: $target_menu"
 }
 
+# Generate Openbox rc.xml with localized desktop names
+generate_openbox_desktop_names() {
+    local lang="$1"
+    local source_rc="${CONFIG_DIR}/openbox/rc.xml.template"
+    local target_rc="${CONFIG_DIR}/openbox/rc.xml"
+    
+    if [[ ! -f "$source_rc" ]]; then
+        log_error "Openbox rc.xml.template not found: $source_rc"
+        return 1
+    fi
+    
+    log_info "Generating localized Openbox rc.xml with desktop names for language: $lang"
+    
+    local desktop1_text="${UI_TEXT_DESKTOP1[$lang]}"
+    local desktop2_text="${UI_TEXT_DESKTOP2[$lang]}"
+    local desktop3_text="${UI_TEXT_DESKTOP3[$lang]}"
+    local desktop4_text="${UI_TEXT_DESKTOP4[$lang]}"
+    
+    # Use sed to replace placeholders in template
+    sed -e "s|{{DESKTOP1}}|${desktop1_text}|g" \
+        -e "s|{{DESKTOP2}}|${desktop2_text}|g" \
+        -e "s|{{DESKTOP3}}|${desktop3_text}|g" \
+        -e "s|{{DESKTOP4}}|${desktop4_text}|g" \
+        "$source_rc" > "$target_rc"
+    
+    log_success "Openbox rc.xml generated: $target_rc"
+}
+
 # Configure input method based on language
 configure_input_method() {
     local lang="$1"
@@ -369,7 +397,12 @@ main() {
         log_error "Failed to generate Openbox menu"
         return 1
     fi
-
+    
+    if ! generate_openbox_desktop_names "$target_lang"; then
+        log_error "Failed to generate Openbox desktop names"
+        return 1
+    fi
+    
     if ! generate_rofi_config "$target_lang"; then
         log_error "Failed to generate Rofi config"
         return 1
