@@ -139,26 +139,29 @@ copy_pcmanfm_config() {
     if [[ -f "${CONFIG_DIR}/pcmanfm/desktop-items-0.conf" ]]; then
         cp "${CONFIG_DIR}/pcmanfm/desktop-items-0.conf" ~/.config/pcmanfm/
         log_success "PCManFM desktop items config copied"
-    else
-        log_error "PCManFM desktop-items-0.conf not found in project config"
-        return 1
     fi
 }
 
 # Copy GTK configuration
- # 不将 GTK 配置写入用户配置路径 ~/.config/，以避免影响其他会话
+# 不将 GTK 配置写入用户配置路径 ~/.config/，以避免影响其他会话
 copy_gtk_config() {
     log_info "Copying GTK configuration..."
     mkdir -p ~/.config/particlede
     if [[ -f "${CONFIG_DIR}/particlede/gtkrc-2.0" ]]; then
         cp "${CONFIG_DIR}/particlede/gtkrc-2.0" ~/.config/particlede/
         log_success "GTK configuration copied"
+    else
+        log_error "GTK 2.0 config not found in project config"
+        return 1
     fi
 
     if [[ -d "${CONFIG_DIR}/particlede/gtk-3.0" ]]; then
         mkdir -p ~/.config/particlede/gtk-3.0
         cp -r "${CONFIG_DIR}/particlede/gtk-3.0/"* ~/.config/particlede/gtk-3.0/ 2>/dev/null || true
         log_success "GTK 3.0 configuration copied"
+    else
+        log_error "GTK 3.0 config not found in project config"
+        return 1
     fi
 }
 
@@ -173,6 +176,55 @@ copy_qt5ct_config() {
         log_error "Qt5ct config not found in project config"
         return 1
     fi
+}
+
+# Copy particlede language configuration
+copy_language_config() {
+    log_info "Copying ParticleDE language configuration..."
+    mkdir -p ~/.config/particlede
+    if [[ -f "${CONFIG_DIR}/particlede/language.conf" ]]; then
+        cp "${CONFIG_DIR}/particlede/language.conf" ~/.config/particlede/
+        log_success "ParticleDE language configuration copied"
+    else
+        log_error "ParticleDE language.conf not found in project config"
+        return 1
+    fi
+}
+
+
+# Copy all configurations
+copy_all_configs() {
+    local success=true
+
+    if ! copy_openbox_config; then
+        success=false
+    fi
+
+    if ! copy_tint2_config; then
+        success=false
+    fi
+
+    if ! copy_rofi_config; then
+        success=false
+    fi
+
+    if ! copy_pcmanfm_config; then
+        success=false
+    fi
+
+    if ! copy_gtk_config; then
+        success=false
+    fi
+
+    if ! copy_qt5ct_config; then
+        success=false
+    fi
+
+    if ! copy_language_config; then
+        success=false
+    fi
+
+    return $success
 }
 
 # ============================================================================
@@ -200,31 +252,10 @@ main() {
     log_info "Starting configuration deployment..."
     echo ""
 
-    # Copy all configurations
-    local success=true
-
-    if ! copy_openbox_config; then
-        success=false
-    fi
-
-    if ! copy_tint2_config; then
-        success=false
-    fi
-
-    if ! copy_rofi_config; then
-        success=false
-    fi
-
-    if ! copy_pcmanfm_config; then
-        success=false
-    fi
-
-    if ! copy_gtk_config; then
-        success=false
-    fi
-
-    if ! copy_qt5ct_config; then
-        success=false
+    if copy_all_configs; then
+        log_success "All configurations deployed successfully"
+    else
+        log_error "Some configurations failed to deploy. Please check the error messages above."
     fi
 
     echo ""
