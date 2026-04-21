@@ -33,35 +33,28 @@ function install_chinese_support() {
 # 轻量化考虑：lxappearance和gnome-themes-extra可选（如果不需要GUI配置工具，可注释掉）。
 function install_themes_and_appearance() {
     echo "[3/8] 安装主题和外观相关包..."
-    sudo apt install -y arc-theme papirus-icon-theme lxappearance # gnome-themes-extra
+    sudo apt install -y arc-theme papirus-icon-theme lxappearance
     # Qt主题支持
     sudo apt install -y qt5-style-plugins qt5ct
 }
 
 # 函数：复制用户级配置文件
-# 目的：将项目的配置文件复制到用户家目录，确保各组件的个性化设置（如窗口管理规则、面板布局、启动器样式）实现开箱。
-# 配置内容：openbox(rc.xml窗口规则)、tint2(面板配置)、rofi(启动器样式)、pcmanfm(文件管理器设置)。
+# 目的：将项目的配置文件复制到用户家目录，确保各组件的个性化设置（如窗口管理规则、面板布局、启动器样式）实现开箱即用。
+# 配置内容：openbox(rc.xml窗口规则)、tint2(面板配置)、rofi(启动器样式)、pcmanfm(文件管理器设置)、gtkrc-2.0(GTK2配置)、gtk-3.0(GTK3配置)、qt5ct(Qt主题配置)。
 function copy_user_configs() {
     echo "[4/7] 复制用户级配置文件..."
-    # 创建配置目录
-    mkdir -p ~/.config/openbox ~/.config/tint2 ~/.config/rofi ~/.config/pcmanfm/default
-
-    # 复制各组件配置
-    cp -r config/openbox/* ~/.config/openbox/ 2>/dev/null || true
-    cp -r config/tint2/* ~/.config/tint2/ 2>/dev/null || true
-    cp -r config/rofi/* ~/.config/rofi/ 2>/dev/null || true
-    cp -r config/pcmanfm/* ~/.config/pcmanfm/ 2>/dev/null || true
+    # 使用统一的配置部署脚本
+    if ! ./scripts/copy_configs.sh; then
+        echo "警告：配置文件复制失败，但将继续安装..."
+    fi
 }
 
-# 函数：配置主题和外观
+# 函数：配置主题和图标
 # 目的：为ParticleDE会话准备主题、图标和字体配置，但不通过 gsettings 修改当前用户的全局 GTK 会话设置。
 # 这样可以避免影响 GNOME 会话，同时让ParticleDE在其会话中使用Arc-Dark和Papirus-Dark。
 function configure_themes_and_appearance() {
-    echo "[5/7] 配置主题和外观..."
-    # 不将 GTK3 用户配置写入 ~/.config/gtk-3.0，以避免影响 GNOME 会话。
+    echo "[5/7] 配置主题和图标..."
     # ParticleDE 会话通过 GTK_THEME=Arc-Dark 指向 Arc-Dark 主题。
-    mkdir -p ~/.config/particlede
-    cp config/gtkrc-2.0 ~/.config/particlede/gtkrc-2.0 2>/dev/null || true
 
     # 设置Openbox主题
     mkdir -p ~/.themes
@@ -77,10 +70,6 @@ function configure_themes_and_appearance() {
         cp -r icons/Numix ~/.icons/ 2>/dev/null || true
         cp -r icons/Numix-Light ~/.icons/ 2>/dev/null || true
     fi
-
-    # 通过会话环境变量和 Qt 配置文件设置主题，而不是修改全局 GNOME 设置
-    mkdir -p ~/.config/qt5ct
-    cp config/qt5ct/qt5ct.conf ~/.config/qt5ct/
 }
 
 # 函数：安装系统级会话文件

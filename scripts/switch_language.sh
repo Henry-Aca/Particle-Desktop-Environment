@@ -337,19 +337,25 @@ main() {
         return 1
     fi
     
-    # 2. Apply to current session
+    # 2. Deploy configurations to user directories
+    if ! "${SCRIPT_DIR}/copy_configs.sh"; then
+        log_error "Failed to deploy configurations"
+        return 1
+    fi
+    
+    # 3. Apply to current session
     if ! apply_to_session "$target_lang"; then
         log_error "Failed to apply session environment"
         return 1
     fi
     
-    # 3. Configure input method
+    # 4. Configure input method
     if ! configure_input_method "$target_lang"; then
         log_error "Failed to configure input method"
         return 1
     fi
     
-    # 4. Save user preference
+    # 5. Save user preference
     if ! save_user_config "$target_lang"; then
         log_error "Failed to save user configuration"
         return 1
