@@ -12,10 +12,10 @@ configuration {
 	modi:                       "drun,run,filebrowser";
     show-icons:                 true;
     icon-theme:                 "Papirus";
-    display-drun:               "{{ROFI_DRUN}}";
-    display-run:                "{{ROFI_RUN}}";
-    display-filebrowser:        "{{ROFI_FILE}}";
-    display-window:             "{{ROFI_WINDOW}}";
+    display-drun:               "\ue74c {{ROFI_DRUN}}";
+    display-run:                "\uf162 {{ROFI_RUN}}";
+    display-filebrowser:        "\uf07c {{ROFI_FILE}}";
+    display-window:             "\uf187 {{ROFI_WINDOW}}";
 	drun-display-format:        "{name} [<span weight='light' size='small'><i>({generic})</i></span>]";
 	window-format:              "{w} · {c} · {t}";
 }

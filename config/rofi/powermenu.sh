@@ -17,13 +17,13 @@ uptime="`uptime -p | sed -e 's/up //g'`"
 host=`hostname`
 
 # Options
-shutdown=' Shutdown'
-reboot=' Reboot'
-lock=' Lock'
-suspend=' Suspend'
-logout=' Logout'
-yes=' Yes'
-no=' No'
+shutdown='关机'
+reboot='重启'
+lock='锁屏'
+suspend='挂起'
+logout='注销'
+yes='是'
+no='否'
 
 # Rofi CMD
 rofi_cmd() {
