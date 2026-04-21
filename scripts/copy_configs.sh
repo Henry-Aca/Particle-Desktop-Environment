@@ -209,6 +209,7 @@ copy_language_config() {
 
 # Copy all configurations
 copy_all_configs() {
+    local skip_language="${1:-false}"
     local success=true
 
     if ! copy_openbox_config; then
@@ -235,8 +236,10 @@ copy_all_configs() {
         success=false
     fi
 
-    if ! copy_language_config; then
-        success=false
+    if [[ "$skip_language" != "true" ]]; then
+        if ! copy_language_config; then
+            success=false
+        fi
     fi
 
     if [[ "$success" == true ]]; then
@@ -251,11 +254,15 @@ copy_all_configs() {
 # ============================================================================
 
 main() {
+    local skip_language=false
     # Parse command line arguments
     case "${1:-}" in
         --help|-h)
             show_help
             return 0
+            ;;
+        --skip-language)
+            skip_language=true
             ;;
         "")
             # No arguments, proceed with copying
@@ -271,7 +278,7 @@ main() {
     log_info "Starting configuration deployment..."
     echo ""
 
-    if copy_all_configs; then
+    if copy_all_configs "$skip_language"; then
         log_success "All configurations deployed successfully"
         log_info "Configurations copied from: $CONFIG_DIR"
         log_info "Configurations deployed to: ~/.config/"
