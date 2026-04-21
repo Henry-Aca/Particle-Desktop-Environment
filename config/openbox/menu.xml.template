@@ -8,7 +8,7 @@
       <action name="Execute"><command>pcmanfm</command></action>
     </item>
     <item label="{{TERMINAL}}">
-      <action name="Execute"><command>xterm</command></action>
+      <action name="Execute"><command>xfce4-terminal</command></action>
     </item>
     <separator/>
     <item label="{{RESTART_OPENBOX}}">
