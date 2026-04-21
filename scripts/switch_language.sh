@@ -354,10 +354,7 @@ main() {
     log_success "Language successfully switched to: $target_lang"
     echo ""
     log_info "New locale: $(get_locale "$target_lang")"
-    log_info "To apply changes to the entire session, reload your shell:"
-    log_info "  exec bash"
-    log_info ""
-    log_info "Or for the next login session, these changes will be applied automatically."
+    log_info "Changes will take effect on next login or after restarting the session."
     
     return 0
 }

@@ -13,7 +13,7 @@ configuration {
     show-icons:                 true;
     icon-theme:                 "Papirus";
     display-drun:               "应用";
-    display-run:                "查找";
+    display-run:                "命令";
     display-filebrowser:        "文件";
     display-window:             "窗口";
 	drun-display-format:        "{name} [<span weight='light' size='small'><i>({generic})</i></span>]";
@@ -125,7 +125,7 @@ entry {
     background-color:            inherit;
     text-color:                  inherit;
     cursor:                      text;
-    placeholder:                 "搜索应用...";
+    placeholder:                 "搜索...";
     placeholder-color:           inherit;
 }
 num-filtered-rows {

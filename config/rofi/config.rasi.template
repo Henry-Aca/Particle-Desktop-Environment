@@ -125,7 +125,7 @@ entry {
     background-color:            inherit;
     text-color:                  inherit;
     cursor:                      text;
-    placeholder:                 "搜索应用...";
+    placeholder:                 "{{ROFI_SEARCH}}";
     placeholder-color:           inherit;
 }
 num-filtered-rows {
