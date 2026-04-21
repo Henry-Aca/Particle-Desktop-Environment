@@ -123,7 +123,7 @@ task_urgent_background_id = 4
 task_iconified_background_id = 2
 mouse_left = toggle_iconify
 mouse_middle = none
-mouse_right = close
+mouse_right = menu
 mouse_scroll_up = toggle
 mouse_scroll_down = iconify
 
@@ -147,9 +147,9 @@ launcher_icon_asb = 100 0 0
 launcher_icon_theme_override = 0
 startup_notifications = 1
 launcher_tooltip = 1
-#launcher_item_app = pcmanfm.desktop
-#launcher_item_app = firefox.desktop
-#launcher_item_app = terminal.desktop
+launcher_item_app = pcmanfm.desktop
+launcher_item_app = firefox.desktop
+launcher_item_app = xfce4-terminal.desktop
 #launcher_item_app = rofi.desktop
 
 #-------------------------------------

@@ -15,7 +15,7 @@ function update_and_install_core() {
     echo "[1/7] 更新包列表并安装核心桌面组件..."
     sudo apt update
     sudo apt install -y openbox tint2 rofi pcmanfm conky-all \
-        xterm lightdm lightdm-gtk-greeter x11-xserver-utils xinit x11-utils xfce4-terminal
+        lightdm lightdm-gtk-greeter x11-xserver-utils xinit x11-utils xfce4-terminal
 }
 
 # 函数：安装中文环境支持包
