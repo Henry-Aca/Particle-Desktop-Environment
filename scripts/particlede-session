@@ -87,15 +87,43 @@ TARGET_LOCALE="${LOCALE_MAP[$TARGET_LANGUAGE]:-zh_CN.UTF-8}"
 
 # Export locale environment variables
 # 导出一系列与语言环境相关的环境变量，确保会话中的应用程序能够正确使用目标语言和区域设置
+# 首先取消所有单独的LC_*变量的设置，让LC_ALL能够完全覆盖
+unset LC_CTYPE
+unset LC_NUMERIC
+unset LC_TIME
+unset LC_COLLATE
+unset LC_MONETARY
+unset LC_MESSAGES
+unset LC_PAPER
+unset LC_NAME
+unset LC_ADDRESS
+unset LC_TELEPHONE
+unset LC_MEASUREMENT
+unset LC_IDENTIFICATION
+
+# 设置主要的locale变量
 export LANG="$TARGET_LOCALE"
-export LANGUAGE="${TARGET_LANGUAGE}:en_US:zh_CN"
+# 根据目标语言设置LANGUAGE变量的回退顺序
+if [[ "$TARGET_LANGUAGE" == "en_US" ]]; then
+    export LANGUAGE="en_US:zh_CN"
+else
+    export LANGUAGE="zh_CN:en_US"
+fi
+# 用LC_ALL覆盖所有其他的locale设置
 export LC_ALL="$TARGET_LOCALE"
-export LC_TIME="$TARGET_LOCALE"
+# 为了确保完全生效，也单独设置所有主要的LC_*变量
+export LC_CTYPE="$TARGET_LOCALE"
 export LC_NUMERIC="$TARGET_LOCALE"
+export LC_TIME="$TARGET_LOCALE"
+export LC_COLLATE="$TARGET_LOCALE"
 export LC_MONETARY="$TARGET_LOCALE"
 export LC_MESSAGES="$TARGET_LOCALE"
-export LC_COLLATE="$TARGET_LOCALE"
-export LC_CTYPE="$TARGET_LOCALE"
+export LC_PAPER="$TARGET_LOCALE"
+export LC_NAME="$TARGET_LOCALE"
+export LC_ADDRESS="$TARGET_LOCALE"
+export LC_TELEPHONE="$TARGET_LOCALE"
+export LC_MEASUREMENT="$TARGET_LOCALE"
+export LC_IDENTIFICATION="$TARGET_LOCALE"
 
 # ============================================================================
 # 输入法配置 - 根据语言环境设置输入法
