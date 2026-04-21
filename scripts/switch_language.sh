@@ -198,6 +198,41 @@ generate_rofi_config() {
     log_success "Rofi config generated: $target_config"
 }
 
+# Generate Rofi powermenu.sh with localized text
+generate_powermenu() {
+    local lang="$1"
+    local source_menu="${CONFIG_DIR}/rofi/powermenu.sh.template"
+    local target_menu="${CONFIG_DIR}/rofi/powermenu.sh"
+    
+    if [[ ! -f "$source_menu" ]]; then
+        log_error "Powermenu template not found: $source_menu"
+        return 1
+    fi
+    
+    log_info "Generating localized powermenu for language: $lang"
+    
+    local power_text="${UI_TEXT_ROFI_POWER[$lang]}"
+    local lock_text="${UI_TEXT_POWER_LOCK[$lang]}"
+    local logout_text="${UI_TEXT_POWER_LOGOUT[$lang]}"
+    local suspend_text="${UI_TEXT_POWER_SUSPEND[$lang]}"
+    local reboot_text="${UI_TEXT_POWER_REBOOT[$lang]}"
+    local shutdown_text="${UI_TEXT_POWER_SHUTDOWN[$lang]}"
+    
+    # Use sed to replace placeholders in template
+    sed -e "s|{{ROFI_POWER}}|${power_text}|g" \
+        -e "s|{{POWER_LOCK}}|${lock_text}|g" \
+        -e "s|{{POWER_LOGOUT}}|${logout_text}|g" \
+        -e "s|{{POWER_SUSPEND}}|${suspend_text}|g" \
+        -e "s|{{POWER_REBOOT}}|${reboot_text}|g" \
+        -e "s|{{POWER_SHUTDOWN}}|${shutdown_text}|g" \
+        "$source_menu" > "$target_menu"
+    
+    # Make it executable
+    chmod +x "$target_menu"
+    
+    log_success "Powermenu generated: $target_menu"
+}
+
 # Configure input method based on language
 configure_input_method() {
     local lang="$1"
@@ -335,6 +370,11 @@ main() {
 
     if ! generate_rofi_config "$target_lang"; then
         log_error "Failed to generate Rofi config"
+        return 1
+    fi
+
+    if ! generate_powermenu "$target_lang"; then
+        log_error "Failed to generate powermenu"
         return 1
     fi
 
