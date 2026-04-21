@@ -38,12 +38,25 @@ function install_themes_and_appearance() {
     sudo apt install -y qt5-style-plugins qt5ct
 }
 
+# 函数：安装桌面快捷方式文件
+# 目的：将项目的桌面快捷方式文件安装到用户本地目录，使 tint2 等程序能够识别和使用这些快捷方式。
+# 快捷方式内容：logout.desktop(注销)、shutdown.desktop(关机菜单)。
+function install_desktop_files() {
+    echo "[4/8] 安装桌面快捷方式文件..."
+    mkdir -p ~/.local/share/applications
+    if [ -d "applications" ]; then
+        cp -r applications/*.desktop ~/.local/share/applications/
+        update-desktop-database ~/.local/share/applications/ 2>/dev/null || true
+        echo "桌面快捷方式已安装"
+    fi
+}
+
 # 函数：复制用户级配置文件
 # 目的：将项目的配置文件复制到用户家目录，确保各组件的个性化设置（如窗口管理规则、面板布局、启动器样式）实现开箱即用。
 # 配置内容：openbox(rc.xml窗口规则)、tint2(面板配置)、rofi(启动器样式)、pcmanfm(文件管理器设置)、gtkrc-2.0(GTK2配置)、
 #          gtk-3.0(GTK3配置)、qt5ct(Qt主题配置)、language.conf(语言配置)。
 function copy_user_configs() {
-    echo "[4/7] 复制用户级配置文件..."
+    echo "[5/8] 复制用户级配置文件..."
     # 使用统一的配置部署脚本
     if ! ./scripts/copy_configs.sh; then
         echo "警告：配置文件复制失败，但将继续安装..."
@@ -54,7 +67,7 @@ function copy_user_configs() {
 # 目的：为ParticleDE会话准备主题、图标和字体配置，但不通过 gsettings 修改当前用户的全局 GTK 会话设置。
 # 这样可以避免影响 GNOME 会话，同时让ParticleDE在其会话中使用Arc-Dark和Papirus-Dark。
 function configure_themes_and_appearance() {
-    echo "[5/7] 配置主题和图标..."
+    echo "[6/8] 配置主题和图标..."
     # ParticleDE 会话通过 GTK_THEME=Arc-Dark 指向 Arc-Dark 主题。
 
     # 设置Openbox主题
@@ -77,7 +90,7 @@ function configure_themes_and_appearance() {
 # 目的：将桌面会话脚本和入口文件安装到系统目录，使ParticleDE在LightDM中可用。这是桌面环境集成到系统的关键。
 # 配置内容：particlede-session(启动脚本，运行openbox等组件，适配中文环境)、particlede.desktop(会话描述文件)。
 function install_system_session_files() {
-    echo "[6/7] 安装系统级会话文件..."
+    echo "[7/8] 安装系统级会话文件..."
     sudo cp scripts/particlede-session /usr/local/bin/
     sudo chmod +x /usr/local/bin/particlede-session
     sudo cp config/particlede.desktop /usr/share/xsessions/
@@ -86,7 +99,7 @@ function install_system_session_files() {
 # 函数：显示用户提示
 # 目的：提供安装完成后的使用指南，帮助用户快速上手ParticleDE。
 function show_user_tips() {
-    echo "[7/7] 显示用户提示..."
+    echo "[8/8] 显示用户提示..."
     echo "ParticleDE 环境配置已完成！"
     echo "请注销或重启，在登录界面选择 'ParticleDE' 会话。"
     echo ""
@@ -105,6 +118,7 @@ function show_user_tips() {
 update_and_install_core
 install_chinese_support
 install_themes_and_appearance
+install_desktop_files
 copy_user_configs
 configure_themes_and_appearance
 install_system_session_files
