@@ -1,0 +1,4 @@
+#!/bin/sh
+# ParticleDE Config Center launcher
+
+exec python3 /usr/local/share/particlede/configer/main.py
