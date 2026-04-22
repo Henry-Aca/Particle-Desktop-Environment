@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+
+## Author : Aditya Shakya (adi1090x)
+## Github : @adi1090x
+#
+## Rofi   : Power Menu
+#
+## Available Styles
+#
+## style-1   style-2   style-3   style-4   style-5
+
+# Current Theme
+theme="$HOME/.config/rofi/powermenu.rasi"
+
+# CMDs
+uptime="`uptime -p | sed -e 's/up //g'`"
+host=`hostname`
+
+# Options (Nerd Font icons)
+shutdown='{{SHUTDOWN}}'
+reboot='{{REBOOT}}'
+lock='{{LOCK}}'
+suspend='{{SUSPEND}}'
+logout='{{LOGOUT}}'
+
+# Rofi CMD
+rofi_cmd() {
+	rofi -dmenu \
+		-p "$host" \
+		-mesg "{{UPTIME}}$uptime" \
+		-theme "${theme}"
+}
+
+# Execute Command
+run_cmd() {
+	if [[ $1 == '--shutdown' ]]; then
+		systemctl poweroff
+	elif [[ $1 == '--reboot' ]]; then
+		systemctl reboot
+	elif [[ $1 == '--suspend' ]]; then
+		mpc -q pause
+		amixer set Master mute
+		systemctl suspend
+	elif [[ $1 == '--logout' ]]; then
+		openbox --exit
+	elif [[ $1 == '--lock' ]]; then
+		if [[ -x '/usr/bin/betterlockscreen' ]]; then
+			betterlockscreen -l
+		elif [[ -x '/usr/bin/i3lock' ]]; then
+			i3lock
+		elif [[ -x '/usr/bin/slock' ]]; then
+			slock
+		elif [[ -x '/usr/bin/xtrlock' ]]; then
+			xtrlock
+		fi
+	fi
+}
+
+# Pass variables to rofi dmenu
+run_rofi() {
+	echo -e "$lock\n$suspend\n$logout\n$reboot\n$shutdown" | rofi_cmd
+}
+
+# Actions
+chosen="$(run_rofi)"
+case ${chosen} in
+    $shutdown)
+		run_cmd --shutdown
+        ;;
+    $reboot)
+		run_cmd --reboot
+        ;;
+    $lock)
+		run_cmd --lock
+        ;;
+    $suspend)
+		run_cmd --suspend
+        ;;
+    $logout)
+		run_cmd --logout
+        ;;
+esac

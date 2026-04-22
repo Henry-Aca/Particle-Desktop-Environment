@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openbox_menu>
+  <menu id="root-menu" label="ParticleDE">
+    <item label="{{LAUNCHER}}">
+      <action name="Execute"><command>rofi -show drun</command></action>
+    </item>
+    <item label="{{FILE_MANAGER}}">
+      <action name="Execute"><command>pcmanfm</command></action>
+    </item>
+    <item label="{{TERMINAL}}">
+      <action name="Execute"><command>xfce4-terminal</command></action>
+    </item>
+    <separator/>
+    <item label="{{RESTART_OPENBOX}}">
+      <action name="Execute"><command>openbox --restart</command></action>
+    </item>
+    <item label="{{LOGOUT}}">
+      <action name="Execute"><command>openbox --exit</command></action>
+    </item>
+  </menu>
+</openbox_menu>

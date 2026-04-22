@@ -5,15 +5,148 @@
 export XDG_CURRENT_DESKTOP="ParticleDE"
 export DESKTOP_SESSION="particlede"
 
-# 中文环境变量
-export LANG="zh_CN.UTF-8"
-export LANGUAGE="zh_CN:en_US"
-export LC_ALL="zh_CN.UTF-8"
+# ============================================================================
+# 加载全局和用户语言配置
+# ============================================================================
 
-# 中文输入法fcitx环境变量
-export GTK_IM_MODULE=fcitx
-export QT_IM_MODULE=fcitx
-export XMODIFIERS=@im=fcitx
+# 获取脚本目录和项目根目录
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+# 用户配置目录，使用 ~/.config/particlede/language.conf 作为唯一语言配置
+USER_CONFIG_DIR="${HOME}/.config/particlede"
+USER_LANG_CONF="${USER_CONFIG_DIR}/language.conf"
+
+# 项目配置目录（模板文件位置）
+CONFIG_DIR="${PROJECT_ROOT}/config"
+GLOBAL_LANG_CONF="${CONFIG_DIR}/particlede/language.conf"
+
+# 默认语言环境：zh_CN（中文）
+DEFAULT_LANGUAGE="zh_CN"
+
+# 先加载全局语言配置（包含关联数组定义）
+if [[ -f "$GLOBAL_LANG_CONF" ]]; then
+    source "$GLOBAL_LANG_CONF"
+fi
+
+# 再加载用户语言配置（可能覆盖 ACTIVE_LANGUAGE）
+if [[ -f "$USER_LANG_CONF" ]]; then
+    source "$USER_LANG_CONF"
+    TARGET_LANGUAGE="${ACTIVE_LANGUAGE:-$DEFAULT_LANGUAGE}"
+else
+    TARGET_LANGUAGE="$DEFAULT_LANGUAGE"
+fi
+
+# ============================================================================
+# 生成本地化配置文件
+# ============================================================================
+
+generate_localized_configs() {
+    local lang="$1"
+    local source_menu="${CONFIG_DIR}/openbox/menu.xml.template"
+    local target_menu="${CONFIG_DIR}/openbox/menu.xml"
+    local source_rofi="${CONFIG_DIR}/rofi/config.rasi.template"
+    local target_rofi="${CONFIG_DIR}/rofi/config.rasi"
+    
+    if [[ -f "$source_menu" ]]; then
+        local launcher_text="${UI_TEXT_LAUNCHER[$lang]}"
+        local filemgr_text="${UI_TEXT_FILE_MANAGER[$lang]}"
+        local terminal_text="${UI_TEXT_TERMINAL[$lang]}"
+        local logout_text="${UI_TEXT_LOGOUT[$lang]}"
+        
+        sed -e "s|{{LAUNCHER}}|${launcher_text}|g" \
+            -e "s|{{FILE_MANAGER}}|${filemgr_text}|g" \
+            -e "s|{{TERMINAL}}|${terminal_text}|g" \
+            -e "s|{{LOGOUT}}|${logout_text}|g" \
+            "$source_menu" > "$target_menu"
+    fi
+    
+    if [[ -f "$source_rofi" ]]; then
+        local drun_text="${UI_TEXT_ROFI_DRUN[$lang]}"
+        local run_text="${UI_TEXT_ROFI_RUN[$lang]}"
+        local file_text="${UI_TEXT_ROFI_FILEBROWSER[$lang]}"
+        local window_text="${UI_TEXT_ROFI_WINDOW[$lang]}"
+        
+        sed -e "s|{{ROFI_DRUN}}|${drun_text}|g" \
+            -e "s|{{ROFI_RUN}}|${run_text}|g" \
+            -e "s|{{ROFI_FILE}}|${file_text}|g" \
+            -e "s|{{ROFI_WINDOW}}|${window_text}|g" \
+            "$source_rofi" > "$target_rofi"
+    fi
+}
+
+# 在会话启动时生成本地化配置文件
+generate_localized_configs "$TARGET_LANGUAGE"
+
+# ============================================================================
+# 根据目标语言设置环境变量
+# ============================================================================
+
+# 通过语言映射表获取对应的 locale 字符串，默认为 zh_CN.UTF-8
+TARGET_LOCALE="${LOCALE_MAP[$TARGET_LANGUAGE]:-zh_CN.UTF-8}"
+
+# Export locale environment variables
+# 导出一系列与语言环境相关的环境变量，确保会话中的应用程序能够正确使用目标语言和区域设置
+# 首先取消所有单独的LC_*变量的设置，让LC_ALL能够完全覆盖
+unset LC_CTYPE
+unset LC_NUMERIC
+unset LC_TIME
+unset LC_COLLATE
+unset LC_MONETARY
+unset LC_MESSAGES
+unset LC_PAPER
+unset LC_NAME
+unset LC_ADDRESS
+unset LC_TELEPHONE
+unset LC_MEASUREMENT
+unset LC_IDENTIFICATION
+
+# 设置主要的locale变量
+export LANG="$TARGET_LOCALE"
+# 根据目标语言设置LANGUAGE变量的回退顺序
+if [[ "$TARGET_LANGUAGE" == "en_US" ]]; then
+    export LANGUAGE="en_US:zh_CN"
+else
+    export LANGUAGE="zh_CN:en_US"
+fi
+# 用LC_ALL覆盖所有其他的locale设置
+export LC_ALL="$TARGET_LOCALE"
+# 为了确保完全生效，也单独设置所有主要的LC_*变量
+export LC_CTYPE="$TARGET_LOCALE"
+export LC_NUMERIC="$TARGET_LOCALE"
+export LC_TIME="$TARGET_LOCALE"
+export LC_COLLATE="$TARGET_LOCALE"
+export LC_MONETARY="$TARGET_LOCALE"
+export LC_MESSAGES="$TARGET_LOCALE"
+export LC_PAPER="$TARGET_LOCALE"
+export LC_NAME="$TARGET_LOCALE"
+export LC_ADDRESS="$TARGET_LOCALE"
+export LC_TELEPHONE="$TARGET_LOCALE"
+export LC_MEASUREMENT="$TARGET_LOCALE"
+export LC_IDENTIFICATION="$TARGET_LOCALE"
+
+# ============================================================================
+# 输入法配置 - 根据语言环境设置输入法
+# ============================================================================
+
+# Configure input method based on language
+INPUT_METHOD="${INPUT_METHOD_FOR_LANGUAGE[$TARGET_LANGUAGE]:-fcitx5}"
+
+case "$INPUT_METHOD" in
+    fcitx5)
+        export GTK_IM_MODULE=fcitx
+        export QT_IM_MODULE=fcitx
+        export XMODIFIERS=@im=fcitx
+        # fcitx5 will be started later in the startup sequence
+        ;;
+    none)
+        # No input method for English
+        ;;
+esac
+
+# ============================================================================
+# 主题和外观配置
+# ============================================================================
 
 # Qt应用使用 qt5ct, 通过 qt5ct.conf 统一外观
 export QT_QPA_PLATFORMTHEME=qt5ct
@@ -26,11 +159,12 @@ export GTK2_RC_FILES="$HOME/.config/particlede/gtkrc-2.0"
 # 确保图标目录在搜索路径中，并更新图标缓存
 export XDG_DATA_DIRS="$HOME/.icons:$HOME/.local/share/icons:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
 if [ -d "$HOME/.icons/Papirus-Dark" ]; then
-    gtk-update-icon-cache -f -t "$HOME/.icons/Papirus-Dark"
+    gtk-update-icon-cache -f -t "$HOME/.icons/Papirus-Dark" 2>/dev/null || true
 fi
 
-# 启动fcitx5输入法框架，仅在ParticleDE会话中启用
-fcitx5 &
+# ============================================================================
+# 组件启动函数
+# ============================================================================
 
 # 启动组件的函数
 start_component() {
@@ -41,6 +175,17 @@ start_component() {
     # 给组件一些启动时间
     sleep 0.2
 }
+
+# ============================================================================
+# 启动桌面会话组件
+# ============================================================================
+
+# 开启fcitx5输入法，如果配置了fcitx5
+if [[ "$INPUT_METHOD" == "fcitx5" ]]; then
+    echo "Starting fcitx5 input method..."
+    fcitx5 &
+    sleep 0.5
+fi
 
 # 按顺序启动组件
 start_component "PCManFM Desktop" "pcmanfm --desktop"
