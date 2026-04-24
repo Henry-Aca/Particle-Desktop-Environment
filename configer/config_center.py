@@ -15,16 +15,28 @@ from gi.repository import Gio, GLib, Gtk  # noqa: E402
 
 from backend import (
     CONKY_RC,
+    OPENBOX_MENU,
     OPENBOX_AUTOSTART,
     OPENBOX_RC,
+    PARTICLEDE_GTK3_DIR,
+    PARTICLEDE_GTKRC_2,
+    PARTICLEDE_LANGUAGE_CONF,
     PARTICLEDE_SESSION_ENV,
+    PCMANFM_CONF,
+    PCMANFM_DESKTOP_ITEMS,
+    QT5CT_CONF,
+    ROFI_COLORS_DIR,
     ROFI_RC,
+    ROFI_POWERMENU_RASI,
+    ROFI_POWERMENU_SH,
+    ROFI_SHARED_DIR,
     THEMES_DIR,
     TINT2_RC,
     RunningStatus,
     apply_wallpaper_now,
     list_installed_themes,
     launch_system_settings,
+    open_in_file_manager,
     parse_managed_autostart_settings,
     parse_tint2_panel_height,
     parse_tint2_panel_position,
@@ -298,6 +310,11 @@ class ConfigCenter(Gtk.Application):
         btn_grid.attach(self._action_btn(self.t("control.stop"), "pcmanfm_stop"), 2, row, 1, 1)
 
         row += 1
+        btn_grid.attach(Gtk.Label(label=self.t("control.rofi"), xalign=0), 0, row, 1, 1)
+        btn_grid.attach(self._action_btn(self.t("control.start"), "rofi_start"), 1, row, 1, 1)
+        btn_grid.attach(self._action_btn(self.t("control.stop"), "rofi_stop"), 2, row, 1, 1)
+
+        row += 1
         btn_grid.attach(Gtk.Label(label=self.t("control.conky"), xalign=0), 0, row, 1, 1)
         btn_grid.attach(self._action_btn(self.t("control.start"), "conky_start"), 1, row, 1, 1)
         btn_grid.attach(self._action_btn(self.t("control.stop"), "conky_stop"), 2, row, 1, 1)
@@ -349,11 +366,20 @@ class ConfigCenter(Gtk.Application):
         self.file_combo = Gtk.ComboBoxText()
 
         self.known_files: List[Tuple[str, Path]] = [
+            (self.t("files.openbox_menu"), OPENBOX_MENU),
             (self.t("files.openbox_rc"), OPENBOX_RC),
-            (self.t("files.openbox_autostart"), OPENBOX_AUTOSTART),
             (self.t("files.tint2rc"), TINT2_RC),
-            (self.t("files.rofi"), ROFI_RC),
-            (self.t("files.conky"), CONKY_RC),
+            (self.t("files.rofi_config"), ROFI_RC),
+            (self.t("files.rofi_powermenu_sh"), ROFI_POWERMENU_SH),
+            (self.t("files.rofi_powermenu_rasi"), ROFI_POWERMENU_RASI),
+            (self.t("files.rofi_colors_dir"), ROFI_COLORS_DIR),
+            (self.t("files.rofi_shared_dir"), ROFI_SHARED_DIR),
+            (self.t("files.pcmanfm_conf"), PCMANFM_CONF),
+            (self.t("files.pcmanfm_desktop_items"), PCMANFM_DESKTOP_ITEMS),
+            (self.t("files.gtkrc2"), PARTICLEDE_GTKRC_2),
+            (self.t("files.gtk3_dir"), PARTICLEDE_GTK3_DIR),
+            (self.t("files.qt5ct"), QT5CT_CONF),
+            (self.t("files.language"), PARTICLEDE_LANGUAGE_CONF),
         ]
         for label, _ in self.known_files:
             self.file_combo.append_text(label)
@@ -364,6 +390,10 @@ class ConfigCenter(Gtk.Application):
         load_btn = Gtk.Button(label=self.t("files.reload"))
         load_btn.connect("clicked", lambda *_: self._load_selected_file())
         top.pack_start(load_btn, False, False, 0)
+
+        open_dir_btn = Gtk.Button(label=self.t("files.open_dir"))
+        open_dir_btn.connect("clicked", lambda *_: self._open_selected_dir())
+        top.pack_start(open_dir_btn, False, False, 0)
 
         save_btn = Gtk.Button(label=self.t("files.save"))
         save_btn.connect("clicked", lambda *_: self._save_selected_file())
@@ -491,6 +521,10 @@ class ConfigCenter(Gtk.Application):
         label, path = self._selected_file()
         self.file_path_label.set_text(f"{label}: {path}")
 
+        if path.exists() and path.is_dir():
+            self.textbuffer.set_text(self.t("files.is_dir", path=str(path)))
+            return
+
         if not path.exists():
             self.textbuffer.set_text(self.t("files.missing", path=str(path)))
             return
@@ -502,6 +536,11 @@ class ConfigCenter(Gtk.Application):
 
     def _save_selected_file(self) -> None:
         _, path = self._selected_file()
+
+        if path.exists() and path.is_dir():
+            self._show_message(self.t("files.dir_not_editable", path=str(path)), Gtk.MessageType.ERROR)
+            return
+
         start, end = self.textbuffer.get_bounds()
         content = self.textbuffer.get_text(start, end, True)
 
@@ -516,3 +555,11 @@ class ConfigCenter(Gtk.Application):
             return
 
         self._show_message(self.t("files.saved", path=str(path)))
+
+    def _open_selected_dir(self) -> None:
+        _, path = self._selected_file()
+        ok, msg_key, kwargs = open_in_file_manager(path)
+        self._show_message(
+            self.t(msg_key, **(kwargs or {})),
+            Gtk.MessageType.INFO if ok else Gtk.MessageType.ERROR,
+        )

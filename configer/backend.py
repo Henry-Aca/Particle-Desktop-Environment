@@ -11,10 +11,24 @@ from typing import Any, Dict, List, Optional, Tuple
 
 
 OPENBOX_RC = Path.home() / ".config" / "openbox" / "rc.xml"
+OPENBOX_MENU = Path.home() / ".config" / "openbox" / "menu.xml"
 OPENBOX_AUTOSTART = Path.home() / ".config" / "openbox" / "autostart"
 TINT2_RC = Path.home() / ".config" / "tint2" / "tint2rc"
 ROFI_RC = Path.home() / ".config" / "rofi" / "config.rasi"
+ROFI_POWERMENU_SH = Path.home() / ".config" / "rofi" / "powermenu.sh"
+ROFI_POWERMENU_RASI = Path.home() / ".config" / "rofi" / "powermenu.rasi"
+ROFI_COLORS_DIR = Path.home() / ".config" / "rofi" / "colors"
+ROFI_SHARED_DIR = Path.home() / ".config" / "rofi" / "shared"
 CONKY_RC = Path.home() / ".config" / "conky" / "conky.conf"
+
+PCMANFM_CONF = Path.home() / ".config" / "pcmanfm" / "default" / "pcmanfm.conf"
+PCMANFM_DESKTOP_ITEMS = Path.home() / ".config" / "pcmanfm" / "desktop-items-0.conf"
+
+PARTICLEDE_GTKRC_2 = Path.home() / ".config" / "particlede" / "gtkrc-2.0"
+PARTICLEDE_GTK3_DIR = Path.home() / ".config" / "particlede" / "gtk-3.0"
+PARTICLEDE_LANGUAGE_CONF = Path.home() / ".config" / "particlede" / "language.conf"
+
+QT5CT_CONF = Path.home() / ".config" / "qt5ct" / "qt5ct.conf"
 
 THEMES_DIR = Path.home() / ".themes"
 PARTICLEDE_SESSION_ENV = Path.home() / ".config" / "particlede" / "session.env"
@@ -418,6 +432,17 @@ def restart_component(kind: str) -> Tuple[bool, str, Dict[str, Any]]:
         run_shell("pkill -x pcmanfm >/dev/null 2>&1 || true")
         return True, "msg.pcmanfm.stopped", {}
 
+    if kind == "rofi_start":
+        # rofi is typically invoked on-demand; start here means "open once".
+        err = spawn(["rofi", "-show", "run"])
+        if err:
+            return _spawn_err(err)
+        return True, "msg.rofi.opened", {}
+
+    if kind == "rofi_stop":
+        run_shell("pkill -x rofi >/dev/null 2>&1 || true")
+        return True, "msg.rofi.stopped", {}
+
     if kind == "conky_start":
         err = spawn(["conky"])
         if err:
@@ -473,3 +498,27 @@ def _spawn_err(err: str) -> Tuple[bool, str, Dict[str, Any]]:
     if err.startswith("exception:"):
         return False, "err.runtime", {"err": err.split(":", 1)[1]}
     return False, "err.runtime", {"err": err}
+
+
+def open_in_file_manager(path: Path) -> Tuple[bool, str, Dict[str, Any]]:
+    """Open a file or directory in the user's file manager."""
+
+    if path.exists() and path.is_dir():
+        target = path
+    else:
+        # If it's a file (or even missing), open its containing directory.
+        target = path.parent
+
+    err = spawn(["xdg-open", str(target)])
+    if not err:
+        return True, "msg.files.open_dir_ok", {"path": str(target)}
+
+    # Fallback for some minimal systems
+    err2 = spawn(["gio", "open", str(target)])
+    if not err2:
+        return True, "msg.files.open_dir_ok", {"path": str(target)}
+
+    if err.startswith("cmd_not_found:") and err2.startswith("cmd_not_found:"):
+        return False, "err.cmd_not_found", {"cmd": "xdg-open"}
+
+    return False, "err.files.open_dir_failed", {"err": f"{err}; {err2}"}
