@@ -50,6 +50,8 @@
   "system.datetime": "日期时间",
   "system.network": "网络",
   "system.open": "打开",
+  "system.center": "系统设置",
+  "system.open_center": "打开系统设置",
 
   "msg.system.launched": "已打开：{target}",
 

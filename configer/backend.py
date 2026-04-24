@@ -491,6 +491,7 @@ def launch_system_settings(kind: str) -> Tuple[bool, str, Dict[str, Any]]:
     """
 
     commands: Dict[str, List[str]] = {
+        "center": ["gnome-control-center"],
         "display": ["gnome-control-center", "display"],
         "input": ["fcitx5-configtool"],
         "sound": ["pavucontrol"],

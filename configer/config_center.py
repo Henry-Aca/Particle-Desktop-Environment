@@ -339,29 +339,14 @@ class ConfigCenter(Gtk.Application):
         return box
 
     def _build_system_tab(self) -> Gtk.Widget:
-        grid = Gtk.Grid(column_spacing=12, row_spacing=10)
-        grid.set_border_width(10)
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        box.set_border_width(10)
 
-        row = 0
-        for kind, label_key in [
-            ("display", "system.display"),
-            ("input", "system.input"),
-            ("sound", "system.sound"),
-            ("power", "system.power"),
-            ("datetime", "system.datetime"),
-            ("network", "system.network"),
-        ]:
-            grid.attach(Gtk.Label(label=self.t(label_key), xalign=0), 0, row, 1, 1)
-            btn = Gtk.Button(label=self.t("system.open"))
-            btn.connect("clicked", lambda _b, k=kind: self._open_system_settings(k))
-            grid.attach(btn, 1, row, 1, 1)
-            row += 1
+        btn = Gtk.Button(label=self.t("system.open_center"))
+        btn.connect("clicked", lambda *_: self._open_system_settings("center"))
+        box.pack_start(btn, False, False, 0)
 
-        sc = Gtk.ScrolledWindow()
-        sc.set_hexpand(True)
-        sc.set_vexpand(True)
-        sc.add_with_viewport(grid)
-        return sc
+        return box
 
     def _build_editor_tab(self) -> Gtk.Widget:
         outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
