@@ -277,7 +277,8 @@ configure_input_method() {
             # Check if fcitx5 is running
             if ! pgrep -x "fcitx5" > /dev/null 2>&1; then
                 log_info "Starting fcitx5..."
-                fcitx5 -d 2>/dev/null || log_error "Failed to start fcitx5"
+                # Avoid inheriting caller's stdout/stderr pipes (prevents GUI hang).
+                fcitx5 -d >/dev/null 2>&1 || log_error "Failed to start fcitx5"
             fi
             
             # Enable fcitx5 input method
