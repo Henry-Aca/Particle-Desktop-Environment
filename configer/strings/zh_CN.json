@@ -43,17 +43,22 @@
   "control.reconfigure": "重载配置",
   "control.open_settings": "打开组件设置",
 
-  "system.display": "显示分辨率",
-  "system.input": "输入法",
-  "system.sound": "声音",
-  "system.power": "电源管理",
-  "system.datetime": "日期时间",
-  "system.network": "网络",
-  "system.open": "打开",
   "system.center": "系统设置",
   "system.open_center": "打开系统设置",
+  "system.language.label": "语言设置：",
+  "system.language.logout_hint": "注销以使语言更改生效",
 
   "msg.system.launched": "已打开：{target}",
+
+  "msg.language.current": "当前语言：{lang}",
+  "msg.language.list_loaded": "已加载语言列表",
+  "msg.language.switched": "语言已切换为：{lang}",
+
+  "err.language.script_missing": "找不到语言切换脚本：{path}",
+  "err.language.list_failed": "获取支持语言失败：{detail}",
+  "err.language.parse_failed": "解析支持语言失败：{detail}",
+  "err.language.read_conf_failed": "读取当前语言失败：{err}",
+  "err.language.switch_failed": "切换语言失败：{detail}",
 
   "msg.control.settings_opened": "已打开组件设置：{component}",
 

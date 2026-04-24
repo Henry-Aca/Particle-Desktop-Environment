@@ -30,6 +30,23 @@ PARTICLEDE_LANGUAGE_CONF = Path.home() / ".config" / "particlede" / "language.co
 
 QT5CT_CONF = Path.home() / ".config" / "qt5ct" / "qt5ct.conf"
 
+
+def run_capture(args: List[str]) -> Tuple[int, str, str]:
+    """Run a command and capture stdout/stderr."""
+    try:
+        completed = subprocess.run(
+            args,
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        return completed.returncode, completed.stdout, completed.stderr
+    except FileNotFoundError:
+        return 127, "", f"cmd_not_found:{args[0]}"
+    except Exception as exc:
+        return 1, "", f"exception:{exc}"
+
 THEMES_DIR = Path.home() / ".themes"
 PARTICLEDE_SESSION_ENV = Path.home() / ".config" / "particlede" / "session.env"
 
@@ -492,12 +509,6 @@ def launch_system_settings(kind: str) -> Tuple[bool, str, Dict[str, Any]]:
 
     commands: Dict[str, List[str]] = {
         "center": ["gnome-control-center"],
-        "display": ["gnome-control-center", "display"],
-        "input": ["fcitx5-configtool"],
-        "sound": ["pavucontrol"],
-        "power": ["xfce4-power-manager-settings"],
-        "datetime": ["gnome-control-center", "datetime"],
-        "network": ["nm-connection-editor"],
     }
 
     cmd = commands.get(kind)
@@ -541,3 +552,61 @@ def open_in_file_manager(path: Path) -> Tuple[bool, str, Dict[str, Any]]:
         return False, "err.cmd_not_found", {"cmd": "xdg-open"}
 
     return False, "err.files.open_dir_failed", {"err": f"{err}; {err2}"}
+
+
+_LANG_LINE_RE = re.compile(r"^\s*([a-z]{2}_[A-Z]{2})\s+(.+?)\s*$")
+
+
+def read_active_language(conf_path: Path) -> Tuple[bool, str, Dict[str, Any]]:
+    """Read ACTIVE_LANGUAGE from language.conf."""
+    try:
+        if not conf_path.exists():
+            return True, "msg.language.current", {"lang": "zh_CN"}
+
+        for raw in read_text(conf_path).splitlines():
+            line = raw.strip()
+            if not line or line.startswith("#"):
+                continue
+            if line.startswith("ACTIVE_LANGUAGE="):
+                val = line.split("=", 1)[1].strip().strip('"').strip("'")
+                if val:
+                    return True, "msg.language.current", {"lang": val}
+        return True, "msg.language.current", {"lang": "zh_CN"}
+    except Exception as exc:
+        return False, "err.language.read_conf_failed", {"err": str(exc)}
+
+
+def list_supported_languages(script_path: Path) -> Tuple[bool, str, Dict[str, Any]]:
+    """Return languages as a compact 'code\tname\n...' string in kwargs['items']."""
+
+    if not script_path.exists():
+        return False, "err.language.script_missing", {"path": str(script_path)}
+
+    code, out, err = run_capture([str(script_path), "list"])
+    if code != 0:
+        detail = (out + "\n" + err).strip()
+        return False, "err.language.list_failed", {"detail": detail}
+
+    items: List[str] = []
+    for line in out.splitlines():
+        m = _LANG_LINE_RE.match(line)
+        if not m:
+            continue
+        items.append(f"{m.group(1)}\t{m.group(2)}")
+
+    if not items:
+        return False, "err.language.parse_failed", {"detail": out.strip()}
+
+    return True, "msg.language.list_loaded", {"items": "\n".join(items)}
+
+
+def switch_language(script_path: Path, lang: str) -> Tuple[bool, str, Dict[str, Any]]:
+    if not script_path.exists():
+        return False, "err.language.script_missing", {"path": str(script_path)}
+
+    code, out, err = run_capture([str(script_path), lang])
+    if code != 0:
+        detail = (out + "\n" + err).strip()
+        return False, "err.language.switch_failed", {"detail": detail}
+
+    return True, "msg.language.switched", {"lang": lang}

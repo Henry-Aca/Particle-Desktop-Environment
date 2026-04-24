@@ -36,16 +36,19 @@ from backend import (
     apply_wallpaper_now,
     list_installed_themes,
     launch_system_settings,
+    list_supported_languages,
     open_in_file_manager,
     parse_managed_autostart_settings,
     parse_tint2_panel_height,
     parse_tint2_panel_position,
     pgrep_any,
     read_kv_config,
+    read_active_language,
     read_simple_env,
     restart_component,
     set_openbox_keybind_execute,
     set_openbox_theme_name,
+    switch_language,
     theme_has_openbox,
     update_kv_config,
     upsert_openbox_autostart_block,
@@ -72,6 +75,14 @@ class ConfigCenter(Gtk.Application):
             RunningStatus(self.t("component.pcmanfm"), ["pcmanfm"]),
             RunningStatus(self.t("component.conky"), ["conky"]),
         ]
+
+        self._lang_ready = False
+
+    def _switch_language_script_path(self) -> Path:
+        user_local = Path.home() / ".local" / "share" / "particlede" / "scripts" / "switch_language.sh"
+        if user_local.exists():
+            return user_local
+        return Path(__file__).resolve().parent.parent / "scripts" / "switch_language.sh"
 
     def do_activate(self):  # type: ignore[override]
         if self.window is None:
@@ -346,7 +357,72 @@ class ConfigCenter(Gtk.Application):
         btn.connect("clicked", lambda *_: self._open_system_settings("center"))
         box.pack_start(btn, False, False, 0)
 
+        box.pack_start(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL), False, False, 0)
+
+        # Language selector
+        grid = Gtk.Grid(column_spacing=12, row_spacing=10)
+        grid.attach(Gtk.Label(label=self.t("system.language.label"), xalign=0), 0, 0, 1, 1)
+
+        self.lang_combo = Gtk.ComboBoxText()
+
+        script_path = self._switch_language_script_path()
+
+        current_lang = "zh_CN"
+        ok, msg_key, kwargs = read_active_language(PARTICLEDE_LANGUAGE_CONF)
+        if ok:
+            current_lang = (kwargs or {}).get("lang") or current_lang
+        else:
+            self._show_message(self.t(msg_key, **(kwargs or {})), Gtk.MessageType.ERROR)
+
+        langs: List[tuple[str, str]] = []
+        ok2, msg_key2, kwargs2 = list_supported_languages(script_path)
+        if ok2:
+            items = (kwargs2 or {}).get("items") or ""
+            for raw in str(items).splitlines():
+                if "\t" not in raw:
+                    continue
+                code, name = raw.split("\t", 1)
+                code = code.strip()
+                name = name.strip()
+                if code:
+                    langs.append((code, name))
+        else:
+            self._show_message(self.t(msg_key2, **(kwargs2 or {})), Gtk.MessageType.ERROR)
+            langs = [(current_lang, current_lang)]
+
+        self._lang_ready = False
+        for code, name in langs:
+            self.lang_combo.append(code, f"{code} - {name}")
+
+        if self.lang_combo.get_active_id() is None:
+            self.lang_combo.set_active_id(current_lang)
+        if self.lang_combo.get_active_id() is None:
+            self.lang_combo.set_active(0)
+
+        self.lang_combo.connect("changed", self._on_language_changed)
+        self._lang_ready = True
+
+        grid.attach(self.lang_combo, 1, 0, 2, 1)
+        box.pack_start(grid, False, False, 0)
+
+        hint = Gtk.Label(label=self.t("system.language.logout_hint"), xalign=0)
+        hint.set_line_wrap(True)
+        box.pack_start(hint, False, False, 0)
+
         return box
+
+    def _on_language_changed(self, *_):
+        if not self._lang_ready:
+            return
+        lang = self.lang_combo.get_active_id() if hasattr(self, "lang_combo") else None
+        if not lang:
+            return
+        script_path = self._switch_language_script_path()
+        ok, msg_key, kwargs = switch_language(script_path, lang)
+        self._show_message(
+            self.t(msg_key, **(kwargs or {})),
+            Gtk.MessageType.INFO if ok else Gtk.MessageType.ERROR,
+        )
 
     def _build_editor_tab(self) -> Gtk.Widget:
         outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)

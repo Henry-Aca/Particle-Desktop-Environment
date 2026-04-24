@@ -37,6 +37,14 @@ function install_config_center_and_desktop_icon() {
     sudo mkdir -p /usr/local/share/particlede/configer/strings
     sudo cp configer/strings/*.json /usr/local/share/particlede/configer/strings/
 
+    # 安装语言切换脚本及其依赖到用户可写目录（供配置中心调用）
+    mkdir -p "$HOME/.local/share/particlede/scripts" "$HOME/.local/share/particlede/config"
+    cp scripts/switch_language.sh "$HOME/.local/share/particlede/scripts/switch_language.sh"
+    cp scripts/copy_configs.sh "$HOME/.local/share/particlede/scripts/copy_configs.sh"
+    chmod +x "$HOME/.local/share/particlede/scripts/switch_language.sh"
+    chmod +x "$HOME/.local/share/particlede/scripts/copy_configs.sh"
+    cp -r config/* "$HOME/.local/share/particlede/config/" 2>/dev/null || true
+
     # 安装启动器脚本
     sudo cp scripts/particlede-config-center /usr/local/bin/particlede-config-center
     sudo chmod +x /usr/local/bin/particlede-config-center
