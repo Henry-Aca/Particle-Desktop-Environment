@@ -122,6 +122,10 @@ class ConfigCenter(Gtk.Application):
 
     def _do_action(self, action: str) -> None:
         ok, msg_key, kwargs = restart_component(action)
+        if ok and msg_key == "msg.control.settings_opened":
+            comp = (kwargs or {}).get("component")
+            if comp:
+                kwargs = {"component": self.t(f"component.{comp}")}
         self._show_message(
             self.t(msg_key, **(kwargs or {})),
             Gtk.MessageType.INFO if ok else Gtk.MessageType.ERROR,
@@ -302,26 +306,30 @@ class ConfigCenter(Gtk.Application):
         btn_grid.attach(Gtk.Label(label=self.t("control.tint2"), xalign=0), 0, row, 1, 1)
         btn_grid.attach(self._action_btn(self.t("control.start"), "tint2_start"), 1, row, 1, 1)
         btn_grid.attach(self._action_btn(self.t("control.stop"), "tint2_stop"), 2, row, 1, 1)
-        btn_grid.attach(self._action_btn(self.t("control.restart"), "tint2_restart"), 3, row, 1, 1)
+        btn_grid.attach(self._action_btn(self.t("control.open_settings"), "tint2_settings"), 3, row, 1, 1)
 
         row += 1
         btn_grid.attach(Gtk.Label(label=self.t("control.pcmanfm"), xalign=0), 0, row, 1, 1)
         btn_grid.attach(self._action_btn(self.t("control.start"), "pcmanfm_start"), 1, row, 1, 1)
         btn_grid.attach(self._action_btn(self.t("control.stop"), "pcmanfm_stop"), 2, row, 1, 1)
+        btn_grid.attach(self._action_btn(self.t("control.open_settings"), "pcmanfm_settings"), 3, row, 1, 1)
 
         row += 1
         btn_grid.attach(Gtk.Label(label=self.t("control.rofi"), xalign=0), 0, row, 1, 1)
         btn_grid.attach(self._action_btn(self.t("control.start"), "rofi_start"), 1, row, 1, 1)
         btn_grid.attach(self._action_btn(self.t("control.stop"), "rofi_stop"), 2, row, 1, 1)
+        btn_grid.attach(Gtk.Label(label=""), 3, row, 1, 1)
 
         row += 1
         btn_grid.attach(Gtk.Label(label=self.t("control.conky"), xalign=0), 0, row, 1, 1)
         btn_grid.attach(self._action_btn(self.t("control.start"), "conky_start"), 1, row, 1, 1)
         btn_grid.attach(self._action_btn(self.t("control.stop"), "conky_stop"), 2, row, 1, 1)
+        btn_grid.attach(Gtk.Label(label=""), 3, row, 1, 1)
 
         row += 1
         btn_grid.attach(Gtk.Label(label=self.t("control.openbox"), xalign=0), 0, row, 1, 1)
         btn_grid.attach(self._action_btn(self.t("control.reconfigure"), "openbox_reconfigure"), 1, row, 2, 1)
+        btn_grid.attach(self._action_btn(self.t("control.open_settings"), "openbox_settings"), 3, row, 1, 1)
 
         refresh = Gtk.Button(label=self.t("control.refresh"))
         refresh.connect("clicked", lambda *_: self._refresh_status())

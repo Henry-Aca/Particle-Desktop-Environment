@@ -432,6 +432,12 @@ def restart_component(kind: str) -> Tuple[bool, str, Dict[str, Any]]:
         run_shell("pkill -x pcmanfm >/dev/null 2>&1 || true")
         return True, "msg.pcmanfm.stopped", {}
 
+    if kind == "pcmanfm_settings":
+        err = spawn(["pcmanfm", "--desktop-pref"])
+        if err:
+            return _spawn_err(err)
+        return True, "msg.control.settings_opened", {"component": "pcmanfm"}
+
     if kind == "rofi_start":
         # rofi is typically invoked on-demand; start here means "open once".
         err = spawn(["rofi", "-show", "run"])
@@ -442,6 +448,12 @@ def restart_component(kind: str) -> Tuple[bool, str, Dict[str, Any]]:
     if kind == "rofi_stop":
         run_shell("pkill -x rofi >/dev/null 2>&1 || true")
         return True, "msg.rofi.stopped", {}
+
+    if kind == "tint2_settings":
+        err = spawn(["tint2conf"])
+        if err:
+            return _spawn_err(err)
+        return True, "msg.control.settings_opened", {"component": "tint2"}
 
     if kind == "conky_start":
         err = spawn(["conky"])
@@ -460,6 +472,12 @@ def restart_component(kind: str) -> Tuple[bool, str, Dict[str, Any]]:
         if out.strip():
             return True, "msg.openbox.reconfigure_ran", {"detail": out.strip()}
         return True, "msg.openbox.reconfigure_ran", {}
+
+    if kind == "openbox_settings":
+        err = spawn(["obconf"])
+        if err:
+            return _spawn_err(err)
+        return True, "msg.control.settings_opened", {"component": "openbox"}
 
     return False, "err.action_unknown", {"action": kind}
 

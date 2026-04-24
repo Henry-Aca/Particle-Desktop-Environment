@@ -41,6 +41,7 @@
   "control.stop": "停止",
   "control.restart": "重启",
   "control.reconfigure": "重载配置",
+  "control.open_settings": "打开组件设置",
 
   "system.display": "显示分辨率",
   "system.input": "输入法",
@@ -51,6 +52,8 @@
   "system.open": "打开",
 
   "msg.system.launched": "已打开：{target}",
+
+  "msg.control.settings_opened": "已打开组件设置：{component}",
 
   "files.choose": "选择配置文件：",
   "files.reload": "重新加载",
