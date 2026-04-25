@@ -4,6 +4,7 @@
 import os
 import re
 import shlex
+import shutil
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -322,6 +323,48 @@ def list_installed_themes(themes_dir: Path) -> List[str]:
 
 def theme_has_openbox(themes_dir: Path, theme_name: str) -> bool:
     return (themes_dir / theme_name / "openbox-3").is_dir()
+
+
+def _theme_tint2_source_file(themes_dir: Path, theme_name: str) -> Optional[Path]:
+    p = themes_dir / theme_name / "tint2rc"
+    return p if p.exists() and p.is_file() else None
+
+
+def _theme_rofi_source_dir(themes_dir: Path, theme_name: str) -> Optional[Path]:
+    p = themes_dir / theme_name / "rofi"
+    return p if p.exists() and p.is_dir() else None
+
+
+def apply_theme_tint2(themes_dir: Path, theme_name: str, dest_tint2rc: Path = TINT2_RC) -> None:
+    """Apply theme-provided tint2rc if present.
+
+    This overwrites the destination tint2rc. Callers may re-apply panel geometry
+    (panel_size/panel_position) afterwards.
+    """
+
+    src = _theme_tint2_source_file(themes_dir, theme_name)
+    if not src:
+        return
+    ensure_parent(dest_tint2rc)
+    shutil.copy2(str(src), str(dest_tint2rc))
+
+
+def apply_theme_rofi(themes_dir: Path, theme_name: str, dest_rofi_dir: Path = ROFI_RC.parent) -> None:
+    """Apply theme-provided rofi configuration directory if present.
+
+    Copies files under <theme>/rofi/ into ~/.config/rofi/ (overwriting existing).
+    """
+
+    src_dir = _theme_rofi_source_dir(themes_dir, theme_name)
+    if not src_dir:
+        return
+    dest_rofi_dir.mkdir(parents=True, exist_ok=True)
+    for item in src_dir.iterdir():
+        target = dest_rofi_dir / item.name
+        if item.is_dir():
+            shutil.copytree(str(item), str(target), dirs_exist_ok=True)
+        else:
+            shutil.copy2(str(item), str(target))
 
 
 def read_simple_env(path: Path) -> Dict[str, str]:

@@ -8,7 +8,7 @@
   "tab.files": "配置文件",
 
   "appearance.theme.label": "主题：",
-  "appearance.theme.hint": "说明：主题来自 ~/.themes（安装脚本会把仓库 themes/ 复制到这里）。\nGTK 主题会在下次登录 ParticleDE 时生效；Openbox 主题若该主题包含 openbox-3，则可立即重载生效。",
+  "appearance.theme.hint": "说明：主题来自 ~/.themes（安装脚本会把仓库 themes/ 复制到这里）。\nGTK 主题会在下次登录 ParticleDE 时生效；Openbox 主题若该主题包含 openbox-3，则可立即重载生效。\n若主题目录包含 tint2rc / rofi/，保存时会一并应用对应配置。",
 
   "appearance.wallpaper.label": "壁纸：",
   "appearance.wallpaper.filter_images": "图片",
@@ -93,6 +93,7 @@
   "err.write.tint2rc": "写入 tint2rc 失败：{err}",
   "err.write.session_theme": "写入 ParticleDE 会话主题失败：{err}",
   "err.write.openbox_theme": "写入 Openbox 主题失败：{err}",
+  "err.write.rofi": "写入 rofi 配置失败：{err}",
   "err.wallpaper": "{err}",
 
   "err.runtime": "{err}",

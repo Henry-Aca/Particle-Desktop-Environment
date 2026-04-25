@@ -34,6 +34,8 @@ from backend import (
     TINT2_RC,
     RunningStatus,
     apply_wallpaper_now,
+    apply_theme_rofi,
+    apply_theme_tint2,
     list_installed_themes,
     launch_system_settings,
     list_supported_languages,
@@ -523,6 +525,18 @@ class ConfigCenter(Gtk.Application):
                 write_particlede_session_env(gtk_theme=selected_theme)
             except Exception as exc:
                 self._show_message(self.t("err.write.session_theme", err=str(exc)), Gtk.MessageType.ERROR)
+                return
+
+            try:
+                apply_theme_tint2(THEMES_DIR, selected_theme)
+            except Exception as exc:
+                self._show_message(self.t("err.write.tint2rc", err=str(exc)), Gtk.MessageType.ERROR)
+                return
+
+            try:
+                apply_theme_rofi(THEMES_DIR, selected_theme)
+            except Exception as exc:
+                self._show_message(self.t("err.write.rofi", err=str(exc)), Gtk.MessageType.ERROR)
                 return
 
             if theme_has_openbox(THEMES_DIR, selected_theme):
