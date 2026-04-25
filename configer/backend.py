@@ -49,6 +49,7 @@ def run_capture(args: List[str]) -> Tuple[int, str, str]:
         return 1, "", f"exception:{exc}"
 
 THEMES_DIR = Path.home() / ".themes"
+ICONS_DIR = Path.home() / ".icons"
 PARTICLEDE_SESSION_ENV = Path.home() / ".config" / "particlede" / "session.env"
 
 AUTOSTART_BEGIN = "### ParticleDE CONFIG CENTER BEGIN"
@@ -313,6 +314,19 @@ def list_installed_themes(themes_dir: Path) -> List[str]:
         return []
     names: List[str] = []
     for p in themes_dir.iterdir():
+        if not p.is_dir():
+            continue
+        if p.name.startswith("."):
+            continue
+        names.append(p.name)
+    return sorted(names, key=lambda s: s.lower())
+
+
+def list_installed_icon_themes(icons_dir: Path) -> List[str]:
+    if not icons_dir.exists():
+        return []
+    names: List[str] = []
+    for p in icons_dir.iterdir():
         if not p.is_dir():
             continue
         if p.name.startswith("."):

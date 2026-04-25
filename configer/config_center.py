@@ -14,6 +14,7 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gio, GLib, Gtk  # noqa: E402
 
 from backend import (
+    ICONS_DIR,
     CONKY_RC,
     OPENBOX_MENU,
     OPENBOX_AUTOSTART,
@@ -36,6 +37,7 @@ from backend import (
     apply_wallpaper_now,
     apply_theme_rofi,
     apply_theme_tint2,
+    list_installed_icon_themes,
     list_installed_themes,
     launch_system_settings,
     list_supported_languages,
@@ -166,6 +168,7 @@ class ConfigCenter(Gtk.Application):
 
         current_env = read_simple_env(PARTICLEDE_SESSION_ENV)
         current_gtk = current_env.get("GTK_THEME") or "Arc-Dark"
+        current_icon = current_env.get("GTK_ICON_THEME") or "Papirus-Dark"
 
         if current_gtk not in themes:
             self.theme_combo.append_text(current_gtk)
@@ -183,6 +186,27 @@ class ConfigCenter(Gtk.Application):
         theme_hint = Gtk.Label(label=self.t("appearance.theme.hint"), xalign=0)
         theme_hint.set_line_wrap(True)
         grid.attach(theme_hint, 0, row, 3, 1)
+
+        # Icon theme
+        row += 1
+        grid.attach(Gtk.Label(label=self.t("appearance.icon.label"), xalign=0), 0, row, 1, 1)
+        self.icon_combo = Gtk.ComboBoxText()
+
+        icons = list_installed_icon_themes(ICONS_DIR)
+        for iname in icons:
+            self.icon_combo.append_text(iname)
+
+        if current_icon not in icons and current_icon:
+            self.icon_combo.append_text(current_icon)
+            icons.append(current_icon)
+
+        if icons:
+            try:
+                self.icon_combo.set_active(icons.index(current_icon))
+            except ValueError:
+                self.icon_combo.set_active(0)
+
+        grid.attach(self.icon_combo, 1, row, 2, 1)
 
         # Wallpaper
         row += 1
@@ -518,35 +542,44 @@ class ConfigCenter(Gtk.Application):
         self._show_message(self.t("msg.saved.keybinds"))
 
     def _on_apply_appearance(self, *_):
-        # theme
+        # theme + icon theme
         selected_theme = self.theme_combo.get_active_text() if hasattr(self, "theme_combo") else None
-        if selected_theme:
+        selected_icon = self.icon_combo.get_active_text() if hasattr(self, "icon_combo") else None
+
+        # Allow changing icon theme even if GTK theme is unchanged.
+        if selected_theme or selected_icon:
+            current_env = read_simple_env(PARTICLEDE_SESSION_ENV)
+            gtk_theme = selected_theme or current_env.get("GTK_THEME") or "Arc-Dark"
+            icon_theme = selected_icon or current_env.get("GTK_ICON_THEME") or "Papirus-Dark"
+
             try:
-                write_particlede_session_env(gtk_theme=selected_theme)
+                write_particlede_session_env(gtk_theme=gtk_theme, icon_theme=icon_theme)
             except Exception as exc:
                 self._show_message(self.t("err.write.session_theme", err=str(exc)), Gtk.MessageType.ERROR)
                 return
 
-            try:
-                apply_theme_tint2(THEMES_DIR, selected_theme)
-            except Exception as exc:
-                self._show_message(self.t("err.write.tint2rc", err=str(exc)), Gtk.MessageType.ERROR)
-                return
-
-            try:
-                apply_theme_rofi(THEMES_DIR, selected_theme)
-            except Exception as exc:
-                self._show_message(self.t("err.write.rofi", err=str(exc)), Gtk.MessageType.ERROR)
-                return
-
-            if theme_has_openbox(THEMES_DIR, selected_theme):
+            # Apply theme-provided extras only when a GTK theme is selected.
+            if selected_theme:
                 try:
-                    set_openbox_theme_name(OPENBOX_RC, selected_theme)
-                except FileNotFoundError:
-                    pass
+                    apply_theme_tint2(THEMES_DIR, selected_theme)
                 except Exception as exc:
-                    self._show_message(self.t("err.write.openbox_theme", err=str(exc)), Gtk.MessageType.ERROR)
+                    self._show_message(self.t("err.write.tint2rc", err=str(exc)), Gtk.MessageType.ERROR)
                     return
+
+                try:
+                    apply_theme_rofi(THEMES_DIR, selected_theme)
+                except Exception as exc:
+                    self._show_message(self.t("err.write.rofi", err=str(exc)), Gtk.MessageType.ERROR)
+                    return
+
+                if theme_has_openbox(THEMES_DIR, selected_theme):
+                    try:
+                        set_openbox_theme_name(OPENBOX_RC, selected_theme)
+                    except FileNotFoundError:
+                        pass
+                    except Exception as exc:
+                        self._show_message(self.t("err.write.openbox_theme", err=str(exc)), Gtk.MessageType.ERROR)
+                        return
 
         # autostart (wallpaper + conky)
         wp_path = self.wallpaper_btn.get_filename()
@@ -581,7 +614,7 @@ class ConfigCenter(Gtk.Application):
 
         # message
         msg = self.t("msg.saved.base")
-        if selected_theme:
+        if selected_theme or selected_icon:
             msg += self.t("msg.saved.with_theme")
         self._show_message(msg)
 

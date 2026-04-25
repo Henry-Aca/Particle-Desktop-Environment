@@ -10,6 +10,8 @@
   "appearance.theme.label": "主题：",
   "appearance.theme.hint": "说明：主题来自 ~/.themes（安装脚本会把仓库 themes/ 复制到这里）。\nGTK 主题会在下次登录 ParticleDE 时生效；Openbox 主题若该主题包含 openbox-3，则可立即重载生效。\n若主题目录包含 tint2rc / rofi/，保存时会一并应用对应配置。",
 
+  "appearance.icon.label": "图标主题：",
+
   "appearance.wallpaper.label": "壁纸：",
   "appearance.wallpaper.filter_images": "图片",
   "appearance.wallpaper.enable": "登录时自动设置壁纸（写入 Openbox autostart）",
