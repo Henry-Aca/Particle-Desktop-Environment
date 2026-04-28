@@ -14,26 +14,45 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gio, GLib, Gtk  # noqa: E402
 
 from backend import (
+    ICONS_DIR,
     CONKY_RC,
+    OPENBOX_MENU,
     OPENBOX_AUTOSTART,
     OPENBOX_RC,
+    PARTICLEDE_GTK3_DIR,
+    PARTICLEDE_GTKRC_2,
+    PARTICLEDE_LANGUAGE_CONF,
     PARTICLEDE_SESSION_ENV,
+    PCMANFM_CONF,
+    PCMANFM_DESKTOP_ITEMS,
+    QT5CT_CONF,
+    ROFI_COLORS_DIR,
     ROFI_RC,
+    ROFI_POWERMENU_RASI,
+    ROFI_POWERMENU_SH,
+    ROFI_SHARED_DIR,
     THEMES_DIR,
     TINT2_RC,
     RunningStatus,
     apply_wallpaper_now,
+    apply_theme_rofi,
+    apply_theme_tint2,
+    list_installed_icon_themes,
     list_installed_themes,
     launch_system_settings,
+    list_supported_languages,
+    open_in_file_manager,
     parse_managed_autostart_settings,
     parse_tint2_panel_height,
     parse_tint2_panel_position,
     pgrep_any,
     read_kv_config,
+    read_active_language,
     read_simple_env,
     restart_component,
     set_openbox_keybind_execute,
     set_openbox_theme_name,
+    switch_language,
     theme_has_openbox,
     update_kv_config,
     upsert_openbox_autostart_block,
@@ -60,6 +79,14 @@ class ConfigCenter(Gtk.Application):
             RunningStatus(self.t("component.pcmanfm"), ["pcmanfm"]),
             RunningStatus(self.t("component.conky"), ["conky"]),
         ]
+
+        self._lang_ready = False
+
+    def _switch_language_script_path(self) -> Path:
+        user_local = Path.home() / ".local" / "share" / "particlede" / "scripts" / "switch_language.sh"
+        if user_local.exists():
+            return user_local
+        return Path(__file__).resolve().parent.parent / "scripts" / "switch_language.sh"
 
     def do_activate(self):  # type: ignore[override]
         if self.window is None:
@@ -110,6 +137,10 @@ class ConfigCenter(Gtk.Application):
 
     def _do_action(self, action: str) -> None:
         ok, msg_key, kwargs = restart_component(action)
+        if ok and msg_key == "msg.control.settings_opened":
+            comp = (kwargs or {}).get("component")
+            if comp:
+                kwargs = {"component": self.t(f"component.{comp}")}
         self._show_message(
             self.t(msg_key, **(kwargs or {})),
             Gtk.MessageType.INFO if ok else Gtk.MessageType.ERROR,
@@ -137,6 +168,7 @@ class ConfigCenter(Gtk.Application):
 
         current_env = read_simple_env(PARTICLEDE_SESSION_ENV)
         current_gtk = current_env.get("GTK_THEME") or "Arc-Dark"
+        current_icon = current_env.get("GTK_ICON_THEME") or "Papirus-Dark"
 
         if current_gtk not in themes:
             self.theme_combo.append_text(current_gtk)
@@ -154,6 +186,27 @@ class ConfigCenter(Gtk.Application):
         theme_hint = Gtk.Label(label=self.t("appearance.theme.hint"), xalign=0)
         theme_hint.set_line_wrap(True)
         grid.attach(theme_hint, 0, row, 3, 1)
+
+        # Icon theme
+        row += 1
+        grid.attach(Gtk.Label(label=self.t("appearance.icon.label"), xalign=0), 0, row, 1, 1)
+        self.icon_combo = Gtk.ComboBoxText()
+
+        icons = list_installed_icon_themes(ICONS_DIR)
+        for iname in icons:
+            self.icon_combo.append_text(iname)
+
+        if current_icon not in icons and current_icon:
+            self.icon_combo.append_text(current_icon)
+            icons.append(current_icon)
+
+        if icons:
+            try:
+                self.icon_combo.set_active(icons.index(current_icon))
+            except ValueError:
+                self.icon_combo.set_active(0)
+
+        grid.attach(self.icon_combo, 1, row, 2, 1)
 
         # Wallpaper
         row += 1
@@ -290,21 +343,30 @@ class ConfigCenter(Gtk.Application):
         btn_grid.attach(Gtk.Label(label=self.t("control.tint2"), xalign=0), 0, row, 1, 1)
         btn_grid.attach(self._action_btn(self.t("control.start"), "tint2_start"), 1, row, 1, 1)
         btn_grid.attach(self._action_btn(self.t("control.stop"), "tint2_stop"), 2, row, 1, 1)
-        btn_grid.attach(self._action_btn(self.t("control.restart"), "tint2_restart"), 3, row, 1, 1)
+        btn_grid.attach(self._action_btn(self.t("control.open_settings"), "tint2_settings"), 3, row, 1, 1)
 
         row += 1
         btn_grid.attach(Gtk.Label(label=self.t("control.pcmanfm"), xalign=0), 0, row, 1, 1)
         btn_grid.attach(self._action_btn(self.t("control.start"), "pcmanfm_start"), 1, row, 1, 1)
         btn_grid.attach(self._action_btn(self.t("control.stop"), "pcmanfm_stop"), 2, row, 1, 1)
+        btn_grid.attach(self._action_btn(self.t("control.open_settings"), "pcmanfm_settings"), 3, row, 1, 1)
+
+        row += 1
+        btn_grid.attach(Gtk.Label(label=self.t("control.rofi"), xalign=0), 0, row, 1, 1)
+        btn_grid.attach(self._action_btn(self.t("control.start"), "rofi_start"), 1, row, 1, 1)
+        btn_grid.attach(self._action_btn(self.t("control.stop"), "rofi_stop"), 2, row, 1, 1)
+        btn_grid.attach(Gtk.Label(label=""), 3, row, 1, 1)
 
         row += 1
         btn_grid.attach(Gtk.Label(label=self.t("control.conky"), xalign=0), 0, row, 1, 1)
         btn_grid.attach(self._action_btn(self.t("control.start"), "conky_start"), 1, row, 1, 1)
         btn_grid.attach(self._action_btn(self.t("control.stop"), "conky_stop"), 2, row, 1, 1)
+        btn_grid.attach(Gtk.Label(label=""), 3, row, 1, 1)
 
         row += 1
         btn_grid.attach(Gtk.Label(label=self.t("control.openbox"), xalign=0), 0, row, 1, 1)
         btn_grid.attach(self._action_btn(self.t("control.reconfigure"), "openbox_reconfigure"), 1, row, 2, 1)
+        btn_grid.attach(self._action_btn(self.t("control.open_settings"), "openbox_settings"), 3, row, 1, 1)
 
         refresh = Gtk.Button(label=self.t("control.refresh"))
         refresh.connect("clicked", lambda *_: self._refresh_status())
@@ -314,29 +376,79 @@ class ConfigCenter(Gtk.Application):
         return box
 
     def _build_system_tab(self) -> Gtk.Widget:
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        box.set_border_width(10)
+
+        btn = Gtk.Button(label=self.t("system.open_center"))
+        btn.connect("clicked", lambda *_: self._open_system_settings("center"))
+        box.pack_start(btn, False, False, 0)
+
+        box.pack_start(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL), False, False, 0)
+
+        # Language selector
         grid = Gtk.Grid(column_spacing=12, row_spacing=10)
-        grid.set_border_width(10)
+        grid.attach(Gtk.Label(label=self.t("system.language.label"), xalign=0), 0, 0, 1, 1)
 
-        row = 0
-        for kind, label_key in [
-            ("display", "system.display"),
-            ("input", "system.input"),
-            ("sound", "system.sound"),
-            ("power", "system.power"),
-            ("datetime", "system.datetime"),
-            ("network", "system.network"),
-        ]:
-            grid.attach(Gtk.Label(label=self.t(label_key), xalign=0), 0, row, 1, 1)
-            btn = Gtk.Button(label=self.t("system.open"))
-            btn.connect("clicked", lambda _b, k=kind: self._open_system_settings(k))
-            grid.attach(btn, 1, row, 1, 1)
-            row += 1
+        self.lang_combo = Gtk.ComboBoxText()
 
-        sc = Gtk.ScrolledWindow()
-        sc.set_hexpand(True)
-        sc.set_vexpand(True)
-        sc.add_with_viewport(grid)
-        return sc
+        script_path = self._switch_language_script_path()
+
+        current_lang = "zh_CN"
+        ok, msg_key, kwargs = read_active_language(PARTICLEDE_LANGUAGE_CONF)
+        if ok:
+            current_lang = (kwargs or {}).get("lang") or current_lang
+        else:
+            self._show_message(self.t(msg_key, **(kwargs or {})), Gtk.MessageType.ERROR)
+
+        langs: List[tuple[str, str]] = []
+        ok2, msg_key2, kwargs2 = list_supported_languages(script_path)
+        if ok2:
+            items = (kwargs2 or {}).get("items") or ""
+            for raw in str(items).splitlines():
+                if "\t" not in raw:
+                    continue
+                code, name = raw.split("\t", 1)
+                code = code.strip()
+                name = name.strip()
+                if code:
+                    langs.append((code, name))
+        else:
+            self._show_message(self.t(msg_key2, **(kwargs2 or {})), Gtk.MessageType.ERROR)
+            langs = [(current_lang, current_lang)]
+
+        self._lang_ready = False
+        for code, name in langs:
+            self.lang_combo.append(code, f"{code} - {name}")
+
+        if self.lang_combo.get_active_id() is None:
+            self.lang_combo.set_active_id(current_lang)
+        if self.lang_combo.get_active_id() is None:
+            self.lang_combo.set_active(0)
+
+        self.lang_combo.connect("changed", self._on_language_changed)
+        self._lang_ready = True
+
+        grid.attach(self.lang_combo, 1, 0, 2, 1)
+        box.pack_start(grid, False, False, 0)
+
+        hint = Gtk.Label(label=self.t("system.language.logout_hint"), xalign=0)
+        hint.set_line_wrap(True)
+        box.pack_start(hint, False, False, 0)
+
+        return box
+
+    def _on_language_changed(self, *_):
+        if not self._lang_ready:
+            return
+        lang = self.lang_combo.get_active_id() if hasattr(self, "lang_combo") else None
+        if not lang:
+            return
+        script_path = self._switch_language_script_path()
+        ok, msg_key, kwargs = switch_language(script_path, lang)
+        self._show_message(
+            self.t(msg_key, **(kwargs or {})),
+            Gtk.MessageType.INFO if ok else Gtk.MessageType.ERROR,
+        )
 
     def _build_editor_tab(self) -> Gtk.Widget:
         outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
@@ -349,11 +461,20 @@ class ConfigCenter(Gtk.Application):
         self.file_combo = Gtk.ComboBoxText()
 
         self.known_files: List[Tuple[str, Path]] = [
+            (self.t("files.openbox_menu"), OPENBOX_MENU),
             (self.t("files.openbox_rc"), OPENBOX_RC),
-            (self.t("files.openbox_autostart"), OPENBOX_AUTOSTART),
             (self.t("files.tint2rc"), TINT2_RC),
-            (self.t("files.rofi"), ROFI_RC),
-            (self.t("files.conky"), CONKY_RC),
+            (self.t("files.rofi_config"), ROFI_RC),
+            (self.t("files.rofi_powermenu_sh"), ROFI_POWERMENU_SH),
+            (self.t("files.rofi_powermenu_rasi"), ROFI_POWERMENU_RASI),
+            (self.t("files.rofi_colors_dir"), ROFI_COLORS_DIR),
+            (self.t("files.rofi_shared_dir"), ROFI_SHARED_DIR),
+            (self.t("files.pcmanfm_conf"), PCMANFM_CONF),
+            (self.t("files.pcmanfm_desktop_items"), PCMANFM_DESKTOP_ITEMS),
+            (self.t("files.gtkrc2"), PARTICLEDE_GTKRC_2),
+            (self.t("files.gtk3_dir"), PARTICLEDE_GTK3_DIR),
+            (self.t("files.qt5ct"), QT5CT_CONF),
+            (self.t("files.language"), PARTICLEDE_LANGUAGE_CONF),
         ]
         for label, _ in self.known_files:
             self.file_combo.append_text(label)
@@ -364,6 +485,10 @@ class ConfigCenter(Gtk.Application):
         load_btn = Gtk.Button(label=self.t("files.reload"))
         load_btn.connect("clicked", lambda *_: self._load_selected_file())
         top.pack_start(load_btn, False, False, 0)
+
+        open_dir_btn = Gtk.Button(label=self.t("files.open_dir"))
+        open_dir_btn.connect("clicked", lambda *_: self._open_selected_dir())
+        top.pack_start(open_dir_btn, False, False, 0)
 
         save_btn = Gtk.Button(label=self.t("files.save"))
         save_btn.connect("clicked", lambda *_: self._save_selected_file())
@@ -417,23 +542,44 @@ class ConfigCenter(Gtk.Application):
         self._show_message(self.t("msg.saved.keybinds"))
 
     def _on_apply_appearance(self, *_):
-        # theme
+        # theme + icon theme
         selected_theme = self.theme_combo.get_active_text() if hasattr(self, "theme_combo") else None
-        if selected_theme:
+        selected_icon = self.icon_combo.get_active_text() if hasattr(self, "icon_combo") else None
+
+        # Allow changing icon theme even if GTK theme is unchanged.
+        if selected_theme or selected_icon:
+            current_env = read_simple_env(PARTICLEDE_SESSION_ENV)
+            gtk_theme = selected_theme or current_env.get("GTK_THEME") or "Arc-Dark"
+            icon_theme = selected_icon or current_env.get("GTK_ICON_THEME") or "Papirus-Dark"
+
             try:
-                write_particlede_session_env(gtk_theme=selected_theme)
+                write_particlede_session_env(gtk_theme=gtk_theme, icon_theme=icon_theme)
             except Exception as exc:
                 self._show_message(self.t("err.write.session_theme", err=str(exc)), Gtk.MessageType.ERROR)
                 return
 
-            if theme_has_openbox(THEMES_DIR, selected_theme):
+            # Apply theme-provided extras only when a GTK theme is selected.
+            if selected_theme:
                 try:
-                    set_openbox_theme_name(OPENBOX_RC, selected_theme)
-                except FileNotFoundError:
-                    pass
+                    apply_theme_tint2(THEMES_DIR, selected_theme)
                 except Exception as exc:
-                    self._show_message(self.t("err.write.openbox_theme", err=str(exc)), Gtk.MessageType.ERROR)
+                    self._show_message(self.t("err.write.tint2rc", err=str(exc)), Gtk.MessageType.ERROR)
                     return
+
+                try:
+                    apply_theme_rofi(THEMES_DIR, selected_theme)
+                except Exception as exc:
+                    self._show_message(self.t("err.write.rofi", err=str(exc)), Gtk.MessageType.ERROR)
+                    return
+
+                if theme_has_openbox(THEMES_DIR, selected_theme):
+                    try:
+                        set_openbox_theme_name(OPENBOX_RC, selected_theme)
+                    except FileNotFoundError:
+                        pass
+                    except Exception as exc:
+                        self._show_message(self.t("err.write.openbox_theme", err=str(exc)), Gtk.MessageType.ERROR)
+                        return
 
         # autostart (wallpaper + conky)
         wp_path = self.wallpaper_btn.get_filename()
@@ -468,7 +614,7 @@ class ConfigCenter(Gtk.Application):
 
         # message
         msg = self.t("msg.saved.base")
-        if selected_theme:
+        if selected_theme or selected_icon:
             msg += self.t("msg.saved.with_theme")
         self._show_message(msg)
 
@@ -491,6 +637,10 @@ class ConfigCenter(Gtk.Application):
         label, path = self._selected_file()
         self.file_path_label.set_text(f"{label}: {path}")
 
+        if path.exists() and path.is_dir():
+            self.textbuffer.set_text(self.t("files.is_dir", path=str(path)))
+            return
+
         if not path.exists():
             self.textbuffer.set_text(self.t("files.missing", path=str(path)))
             return
@@ -502,6 +652,11 @@ class ConfigCenter(Gtk.Application):
 
     def _save_selected_file(self) -> None:
         _, path = self._selected_file()
+
+        if path.exists() and path.is_dir():
+            self._show_message(self.t("files.dir_not_editable", path=str(path)), Gtk.MessageType.ERROR)
+            return
+
         start, end = self.textbuffer.get_bounds()
         content = self.textbuffer.get_text(start, end, True)
 
@@ -516,3 +671,11 @@ class ConfigCenter(Gtk.Application):
             return
 
         self._show_message(self.t("files.saved", path=str(path)))
+
+    def _open_selected_dir(self) -> None:
+        _, path = self._selected_file()
+        ok, msg_key, kwargs = open_in_file_manager(path)
+        self._show_message(
+            self.t(msg_key, **(kwargs or {})),
+            Gtk.MessageType.INFO if ok else Gtk.MessageType.ERROR,
+        )

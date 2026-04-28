@@ -1,0 +1,140 @@
+{
+  "app.title": "ParticleDE Config Center",
+
+  "tab.appearance": "Appearance",
+  "tab.common": "Common",
+  "tab.control": "Components",
+  "tab.system": "System",
+  "tab.files": "Config Files",
+
+  "appearance.theme.label": "Theme:",
+  "appearance.theme.hint": "Note: Themes come from ~/.themes (the installer copies themes/ there).\nThe GTK theme takes effect the next time you log in to ParticleDE; if the theme contains openbox-3, the Openbox theme can take effect after reloading Openbox.\nIf the theme directory contains tint2rc / rofi/, they will be applied together when saving.",
+
+  "appearance.icon.label": "Icon theme:",
+
+  "appearance.wallpaper.label": "Wallpaper:",
+  "appearance.wallpaper.filter_images": "Images",
+  "appearance.wallpaper.enable": "Set wallpaper on login (write to Openbox autostart)",
+  "appearance.conky.enable": "Start Conky on login (write to Openbox autostart)",
+
+  "appearance.panel.position": "Panel position:",
+  "appearance.panel.position.bottom": "Bottom",
+  "appearance.panel.position.top": "Top",
+  "appearance.panel.height": "Height:",
+
+  "appearance.apply": "Save & Apply",
+  "appearance.restart_tint2": "Restart tint2",
+  "appearance.reload_openbox": "Reload Openbox",
+
+  "common.launcher.label": "Launcher command (Super+Space):",
+  "common.terminal.label": "Terminal command (Super+Enter):",
+  "common.apply": "Save & Apply",
+  "msg.saved.keybinds": "Saved: key bindings",
+
+  "common.hint": "Tip: After writing key bindings to ~/.config/openbox/rc.xml, click “Reload Openbox” to apply.\nAfter updating ~/.config/tint2/tint2rc, click “Restart tint2” to apply.",
+
+  "control.refresh": "Refresh status",
+  "control.tint2": "tint2:",
+  "control.pcmanfm": "Desktop (PCManFM):",
+  "control.rofi": "rofi:",
+  "control.conky": "Conky:",
+  "control.openbox": "Openbox:",
+  "control.start": "Start",
+  "control.stop": "Stop",
+  "control.restart": "Restart",
+  "control.reconfigure": "Reload config",
+  "control.open_settings": "Open component settings",
+
+  "system.center": "System Settings",
+  "system.open_center": "Open System Settings",
+  "system.language.label": "Language:",
+  "system.language.logout_hint": "Log out for changes to take effect",
+
+  "msg.system.launched": "Opened: {target}",
+
+  "msg.language.current": "Current language: {lang}",
+  "msg.language.list_loaded": "Loaded language list",
+  "msg.language.switched": "Language switched to: {lang}",
+
+  "err.language.script_missing": "Language switch script not found: {path}",
+  "err.language.list_failed": "Failed to get supported languages: {detail}",
+  "err.language.parse_failed": "Failed to parse supported languages: {detail}",
+  "err.language.read_conf_failed": "Failed to read current language: {err}",
+  "err.language.switch_failed": "Failed to switch language: {detail}",
+
+  "msg.control.settings_opened": "Opened settings: {component}",
+
+  "files.choose": "Select config file:",
+  "files.reload": "Reload",
+  "files.open_dir": "Open containing folder",
+  "files.save": "Save",
+  "files.is_dir": "# This is a directory and cannot be edited here: {path}\n# Click “Open containing folder” to open it in the file manager.\n",
+  "files.dir_not_editable": "This is a directory and cannot be saved: {path}",
+  "files.openbox_menu": "Openbox menu.xml",
+  "files.openbox_rc": "Openbox rc.xml",
+  "files.tint2rc": "tint2rc",
+  "files.rofi_config": "rofi config.rasi",
+  "files.rofi_powermenu_sh": "rofi powermenu.sh",
+  "files.rofi_powermenu_rasi": "rofi powermenu.rasi",
+  "files.rofi_colors_dir": "rofi colors/ (directory)",
+  "files.rofi_shared_dir": "rofi shared/ (directory)",
+  "files.pcmanfm_conf": "PCManFM pcmanfm.conf",
+  "files.pcmanfm_desktop_items": "PCManFM desktop-items-0.conf",
+  "files.gtkrc2": "ParticleDE gtkrc-2.0",
+  "files.gtk3_dir": "ParticleDE gtk-3.0/ (directory)",
+  "files.qt5ct": "qt5ct.conf",
+  "files.language": "ParticleDE language.conf",
+
+  "msg.saved.base": "Saved: key bindings / autostart / panel settings",
+  "msg.saved.with_theme": "; theme saved (GTK theme takes effect next login)",
+
+  "err.missing.openbox_rc": "Openbox config file not found: {path} (run the installer to copy default configs first)",
+  "err.missing.tint2rc": "tint2 config file not found: {path} (run the installer to copy default configs first)",
+  "err.write.openbox_keys": "Failed to write Openbox key bindings: {err}",
+  "err.write.autostart": "Failed to write Openbox autostart: {err}",
+  "err.write.tint2rc": "Failed to write tint2rc: {err}",
+  "err.write.session_theme": "Failed to write ParticleDE session theme: {err}",
+  "err.write.openbox_theme": "Failed to write Openbox theme: {err}",
+  "err.write.rofi": "Failed to write rofi config: {err}",
+  "err.wallpaper": "{err}",
+
+  "err.runtime": "{err}",
+
+  "err.cmd_not_found": "Command not found: {cmd}",
+  "err.action_unknown": "Unknown action: {action}",
+
+  "msg.tint2.restarted": "tint2 restarted",
+  "msg.tint2.stopped": "tint2 stopped",
+  "msg.tint2.started": "tint2 started",
+  "msg.pcmanfm.started": "Desktop (PCManFM) started",
+  "msg.pcmanfm.stopped": "Desktop (PCManFM) stopped",
+  "msg.rofi.opened": "rofi opened",
+  "msg.rofi.stopped": "rofi stopped",
+  "msg.conky.started": "Conky started",
+  "msg.conky.stopped": "Conky stopped",
+  "msg.openbox.reconfigured": "Openbox reloaded",
+  "msg.openbox.reconfigure_ran": "Openbox reload command executed",
+  "msg.wallpaper.applied_pcmanfm": "Wallpaper applied (pcmanfm)",
+  "msg.wallpaper.applied_feh": "Wallpaper applied (feh)",
+  "err.wallpaper.no_file": "No wallpaper selected",
+  "err.wallpaper.missing": "Wallpaper file does not exist: {path}",
+  "err.wallpaper.failed": "Failed to set wallpaper: {detail}",
+
+  "files.missing": "# File does not exist: {path}\n",
+  "files.read_failed": "# Read failed: {err}\n",
+  "files.save_failed": "Save failed: {err}",
+  "files.saved": "Saved: {path}",
+  "files.rcxml_create_blocked": "Creating rc.xml here is not recommended when it doesn't exist; run the installer to copy default configs first",
+
+  "msg.files.open_dir_ok": "Opened folder: {path}",
+  "err.files.open_dir_failed": "Failed to open folder: {err}",
+
+  "status.running": "Running",
+  "status.stopped": "Stopped",
+
+  "component.openbox": "Openbox",
+  "component.tint2": "tint2",
+  "component.rofi": "rofi",
+  "component.pcmanfm": "pcmanfm",
+  "component.conky": "conky"
+}
